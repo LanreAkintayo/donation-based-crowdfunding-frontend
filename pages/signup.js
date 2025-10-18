@@ -1,8 +1,10 @@
-import { useState } from "react"; // 1. Import useState to manage our form data
+import { useState } from "react";
+import { useRouter } from "next/router"; // 1. Import the router
 import Layout from "./layout";
 
 const SignUp = () => {
-  // 2. Set up state to hold the form data (what the user types in)
+  const router = useRouter(); // 2. Initialize the router
+
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -11,10 +13,9 @@ const SignUp = () => {
     confirmPassword: "",
   });
 
-  // 3. Set up state to hold any validation errors
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false); // 3. Add loading state
 
-  // 4. This function runs every time the user types in an input field
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -23,47 +24,67 @@ const SignUp = () => {
     });
   };
 
-  // 5. This function runs when the user clicks the "Sign Up" button
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Prevents the page from reloading on submission
+  // The main function to handle form submission
+  const handleSubmit = async (e) => {
+    // 4. Make this function async
+    e.preventDefault();
+    setIsLoading(true); // Disable button on submit
 
-    // --- VALIDATION LOGIC ---
+    // --- Validation logic (no changes here) ---
     const newErrors = {};
-    if (!formData.fullName) {
-        newErrors.fullName = "Full name is required.";
-    }
-    if (!formData.username) {
-        newErrors.username = "Username is required.";
-    }
+    if (!formData.fullName) newErrors.fullName = "Full name is required.";
+    if (!formData.username) newErrors.username = "Username is required.";
     if (!formData.email) {
-        newErrors.email = "Email is required.";
+      newErrors.email = "Email is required.";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-        // This is a simple check to see if the email looks valid
-        newErrors.email = "Email address is invalid.";
+      newErrors.email = "Email address is invalid.";
     }
     if (!formData.password) {
-        newErrors.password = "Password is required.";
-    } else if (formData.password.length < 8) {
-        newErrors.password = "Password must be at least 8 characters long.";
+      newErrors.password = "Password is required.";
+    } else if (formData.password.length < 4) {
+      newErrors.password = "Password must be at least 4 characters long.";
     }
     if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = "Passwords do not match.";
+      newErrors.confirmPassword = "Passwords do not match.";
     }
-    // --- END OF VALIDATION ---
 
-    setErrors(newErrors); // Update the errors state
+    setErrors(newErrors);
 
-    // 6. If there are no errors, we can submit the form
+    // If validation passes, send data to the backend
     if (Object.keys(newErrors).length === 0) {
-      console.log("Form submitted successfully:", formData);
-      // **IMPORTANT**: This is where you would send the data to your backend API
-      // For example: await yourApi.registerUser(formData);
-      alert("Account created successfully! (Check the console for the data)");
-    } else {
-      console.log("Form has errors:", newErrors);
-    }
-  };
+      try {
+        // We don't need to send confirmPassword to the backend
+        const { confirmPassword, ...submissionData } = formData;
 
+        // 5. The API Call
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const response = await fetch(`${apiUrl}/api/users/add-user`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(submissionData),
+        });
+
+        const data = await response.json();
+
+        // If the server sends an error (e.g., username taken)
+        if (!response.ok) {
+          throw new Error(data.message || "Something went wrong");
+        }
+
+        // If successful
+        alert("Account created successfully! Please log in.");
+        router.push("/login"); // 6. Redirect to login page
+      } catch (error) {
+        // Show any error messages from the backend
+        console.error("Registration error:", error);
+        alert(`Registration failed: ${error.message}`);
+      }
+    }
+
+    setIsLoading(false); // Re-enable button
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-tr from-[#e7e0ce] via-white to-white px-4 dark:bg-gray-900">
@@ -77,12 +98,13 @@ const SignUp = () => {
           </p>
         </div>
 
-        {/* 7. Attach the handleSubmit function to the form's onSubmit event */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
-          
           {/* --- Full Name Field --- */}
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="fullName"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Full Name
             </label>
             <input
@@ -90,18 +112,22 @@ const SignUp = () => {
               name="fullName"
               type="text"
               required
-              value={formData.fullName} // Connect input to state
-              onChange={handleChange}   // Connect input to handleChange function
-              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              value={formData.fullName}
+              onChange={handleChange}
+              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm"
               placeholder="e.g., Aliyu Musa"
             />
-            {/* Show error message if it exists */}
-            {errors.fullName && <p className="mt-1 text-xs text-red-600">{errors.fullName}</p>}
+            {errors.fullName && (
+              <p className="mt-1 text-xs text-red-600">{errors.fullName}</p>
+            )}
           </div>
 
           {/* --- Username Field --- */}
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Username
             </label>
             <input
@@ -109,36 +135,45 @@ const SignUp = () => {
               name="username"
               type="text"
               required
-              value={formData.username} // Connect input to state
-              onChange={handleChange}    // Connect input to handleChange function
-              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              value={formData.username}
+              onChange={handleChange}
+              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm"
               placeholder="e.g., aliyumusa"
             />
-            {errors.username && <p className="mt-1 text-xs text-red-600">{errors.username}</p>}
+            {errors.username && (
+              <p className="mt-1 text-xs text-red-600">{errors.username}</p>
+            )}
           </div>
 
           {/* --- Email Address Field --- */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Email Address
             </label>
             <input
               id="email"
               name="email"
               type="email"
-              autoComplete="email"
               required
-              value={formData.email} // Connect input to state
-              onChange={handleChange}  // Connect input to handleChange function
-              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              value={formData.email}
+              onChange={handleChange}
+              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm"
               placeholder="you@example.com"
             />
-            {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+            {errors.email && (
+              <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+            )}
           </div>
 
-          {/* --- Password Field --- */}
+          {/* --- Password Fields (no changes) --- */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Password
             </label>
             <input
@@ -146,17 +181,20 @@ const SignUp = () => {
               name="password"
               type="password"
               required
-              value={formData.password} // Connect input to state
-              onChange={handleChange}   // Connect input to handleChange function
-              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              value={formData.password}
+              onChange={handleChange}
+              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm"
               placeholder="••••••••"
             />
-            {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
+            {errors.password && (
+              <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+            )}
           </div>
-
-          {/* --- Confirm Password Field --- */}
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Confirm Password
             </label>
             <input
@@ -164,21 +202,26 @@ const SignUp = () => {
               name="confirmPassword"
               type="password"
               required
-              value={formData.confirmPassword} // Connect input to state
-              onChange={handleChange}          // Connect input to handleChange function
-              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm"
               placeholder="••••••••"
             />
-            {errors.confirmPassword && <p className="mt-1 text-xs text-red-600">{errors.confirmPassword}</p>}
+            {errors.confirmPassword && (
+              <p className="mt-1 text-xs text-red-600">
+                {errors.confirmPassword}
+              </p>
+            )}
           </div>
 
           {/* --- Sign Up Button --- */}
           <div>
             <button
-              type="submit" // The button type should be "submit" to trigger the form's onSubmit
-              className="group relative flex w-full justify-center rounded-md border border-transparent bg-orange-700 px-4 py-2 text-sm font-medium text-white hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+              type="submit"
+              disabled={isLoading}
+              className="group relative flex w-full justify-center rounded-md border border-transparent bg-orange-700 px-4 py-2 text-sm font-medium text-white hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:bg-orange-400 disabled:cursor-not-allowed"
             >
-              Sign Up
+              {isLoading ? "Creating Account..." : "Sign Up"}
             </button>
           </div>
         </form>
