@@ -39,9 +39,11 @@ const supportedTokens = [
 
 function replaceIpfsGateway(url) {
   // Replace the old gateway with the new one
-  return url.replace('https://cloudflare-ipfs.com/ipfs/', 'https://gateway.pinata.cloud/ipfs/');
+  return url.replace(
+    "https://cloudflare-ipfs.com/ipfs/",
+    "https://gateway.pinata.cloud/ipfs/"
+  );
 }
-
 
 const time = ((milliseconds) => {
   const SEC = 1e3;
@@ -572,10 +574,11 @@ const PageInfo = ({ projectInfo }) => {
 
   // console.log("Project data.contractStatus: ", projectData.contractStatus);
 
-  
   // console.log("All Projects::::::::::::::::: ",allProjects)
-  
-  const newImageUrl = replaceIpfsGateway(projectInfo.projectImageUrl)
+
+  // const newImageUrl = replaceIpfsGateway(projectInfo.projectImageUrl)
+
+  const newImageUrl = `https://amethyst-intimate-swallow-509.mypinata.cloud/ipfs/${projectInfo.projectImageUrl}`;
 
   return (
     <>

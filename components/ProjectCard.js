@@ -5,10 +5,12 @@ import useSWR, { useSWRConfig } from "swr";
 import { contractAddresses, abi } from "../constants";
 import Link from "next/link";
 
-
 function replaceIpfsGateway(url) {
   // Replace the old gateway with the new one
-  return url.replace('https://cloudflare-ipfs.com/ipfs/', 'https://gateway.pinata.cloud/ipfs/');
+  return url.replace(
+    "https://cloudflare-ipfs.com/ipfs/",
+    "https://gateway.pinata.cloud/ipfs/"
+  );
 }
 
 export default function ProjectCard({ projectInfo }) {
@@ -50,12 +52,13 @@ export default function ProjectCard({ projectInfo }) {
 
   // console.log("Project Info: ", projectInfo)
 
-  console.log("Project Image URL: ", projectInfo.projectImageUrl)
+  console.log("Project Image URL: ", projectInfo.projectImageUrl);
 
-  const newImageUrl = replaceIpfsGateway(projectInfo.projectImageUrl)
+  const newImageUrl = `https://amethyst-intimate-swallow-509.mypinata.cloud/ipfs/${projectInfo.projectImageUrl}`;
 
+  // const newImageUrl = replaceIpfsGateway(projectInfo.projectImageUrl)
 
-  console.log("New image url: ", newImageUrl)
+  console.log("New image url: ", newImageUrl);
 
   const formattedGoal = dollarUSLocale.format(goal).toString();
   return (
@@ -65,7 +68,7 @@ export default function ProjectCard({ projectInfo }) {
           pathname: `/${projectInfo.projectTitle}`,
           query: {
             ...projectInfo,
-            backers:  JSON.stringify(projectInfo.backers)
+            backers: JSON.stringify(projectInfo.backers),
           },
           // the data
         }}
@@ -94,12 +97,13 @@ export default function ProjectCard({ projectInfo }) {
             <h1 className="text-xl text-green-900 py-3">
               {projectInfo.projectTitle}
             </h1>
-            <p className="text-sm text-gray-800">{projectInfo.projectNote.toString().substring(0, 200)}</p>
-         
-              <p className="pt-4 text-green-900">
-                {projectInfo.percentFunded}% of ${formattedGoal} Raised{" "}
-              </p>
-            
+            <p className="text-sm text-gray-800">
+              {projectInfo.projectNote.toString().substring(0, 200)}
+            </p>
+
+            <p className="pt-4 text-green-900">
+              {projectInfo.percentFunded}% of ${formattedGoal} Raised{" "}
+            </p>
           </div>
         </div>
       </Link>

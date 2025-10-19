@@ -16,6 +16,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import Layout from "./layout";
 import ModalSuccess from "../components/ModalSuccess";
 import ModalFailure from "../components/ModalFailure";
+import axios from "axios";
+
+
 // import DatePicker from "sassy-datepicker";
 
 /* Create an instance of the client */
@@ -39,6 +42,8 @@ const client = create({
     authorization: auth,
   },
 });
+
+console.log("Client: ", client);
 
 const Launch = () => {
   const {
@@ -82,7 +87,7 @@ const Launch = () => {
     goal: "",
   });
 
-  console.log("Date at the beggining that was set::::", new Date());
+  // console.log("Date at the beggining that was set::::", new Date());
   const [isValidDuration, setIsValidDuration] = useState(true);
   const [isValidLaunchDate, setIsValidLaunchDate] = useState(true);
   const [isValidGoal, setIsValidGoal] = useState(true);
@@ -125,8 +130,6 @@ const Launch = () => {
     if (event.target.id == "imageSrc") {
       imagePath = event.target.files[0] || "";
       setImageFile(imagePath);
-
-      
 
       // console.log("imagePath: ", imagePath);
       // const uploadedImage = await trackPromise(client.add(imageFile));
@@ -196,6 +199,23 @@ const Launch = () => {
   //   console.log("Project: ", project);
   // }, [project]);
 
+  const getHash = async (file) => { 
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("network", "public");
+
+    const res = await axios.post(
+      "https://uploads.pinata.cloud/v3/files",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_PINATA_JWT}`,
+        },
+      }
+    );
+    return res;
+  };
+
   const handleLaunch = async () => {
     setIsLaunching(true);
     setLaunchText("Publishing Project");
@@ -215,8 +235,16 @@ const Launch = () => {
 
     try {
       setLaunchText("Uploading data to IPFS");
-      const uploadedImage = await trackPromise(client.add(imageFile));
-      const url = `https://cloudflare-ipfs.com/ipfs/${uploadedImage.path}`;
+      // const uploadedImage = await trackPromise(client.add(imageFile));
+
+      // console.log("Uploaded Image: ", uploadedImage);
+
+      const res = await getHash(imageFile);
+      const hash = res.data.data.cid
+
+      console.log("Res: ", res)
+      console.log("Hash: ", hash)
+      // const url = `https://cloudflare-ipfs.com/ipfs/${uploadedImage.path}`;
 
       setLaunchText("Publishing Project");
 
@@ -234,7 +262,7 @@ const Launch = () => {
             projectTitle: projectInfo.title,
             projectSubtitle: projectInfo.subtitle,
             projectNote: projectInfo.note,
-            projectImageUrl: url,
+            projectImageUrl: hash,
             // projectImageUrl: currentUrl,
           },
         },
@@ -246,6 +274,8 @@ const Launch = () => {
     } catch (error) {
       console.log(error);
       window.alert("Make sure you have an internet connection");
+      setIsLaunching(false)
+      setLaunchText("Publish Project")
     }
 
     // const { runContractFunction: getAllProjects } = useWeb3Contract({

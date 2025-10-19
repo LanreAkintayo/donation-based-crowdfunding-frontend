@@ -19,6 +19,7 @@
     "@web3uikit/icons": "^0.1.5",
     "@web3uikit/web3": "^0.1.6",
     "animate.css": "^4.1.1",
+    "axios": "^1.12.2",
     "ethers": "^5.6.4",
     "ipfs": "^0.63.5",
     "ipfs-http-client": "^57.0.3",
