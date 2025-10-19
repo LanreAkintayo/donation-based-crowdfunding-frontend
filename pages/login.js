@@ -54,7 +54,7 @@ const Login = () => {
       localStorage.setItem('token', data.token);
 
       alert('Login successful!');
-      router.push('/dashboard'); // Redirect to the user's dashboard
+      router.push('/'); // Redirect to the user's dashboard
 
     } catch (err) {
       console.error("Login error:", err);
