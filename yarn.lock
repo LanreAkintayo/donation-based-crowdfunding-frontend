@@ -9716,6 +9716,11 @@ ltgt@^2.1.2, ltgt@~2.2.0:
   resolved "https://registry.yarnpkg.com/ltgt/-/ltgt-2.2.1.tgz#f35ca91c493f7b73da0e07495304f17b31f87ee5"
   integrity sha512-AI2r85+4MquTw9ZYqabu4nMwy9Oftlfa/e/52t9IjtfG+mGBbTNdAoZ3RQKLHR6r0wQnwZnPIEh/Ya6XTWAKNA==
 
+lucide-react@^0.546.0:
+  version "0.546.0"
+  resolved "https://registry.yarnpkg.com/lucide-react/-/lucide-react-0.546.0.tgz#d9fdc232b47fe652e06401b7ee846bf82b4f7de8"
+  integrity sha512-Z94u6fKT43lKeYHiVyvyR8fT7pwCzDu7RyMPpTvh054+xahSgj4HFQ+NmflvzdXsoAjYGdCguGaFKYuvq0ThCQ==
+
 mafmt@^10.0.0:
   version "10.0.0"
   resolved "https://registry.yarnpkg.com/mafmt/-/mafmt-10.0.0.tgz#431726f16e51090b32ada621c402acbdb64fce9c"

@@ -134,6 +134,8 @@ const PageInfo = ({ projectInfo }) => {
         provider
       );
 
+      console.log("Crowdfund Contract: ", crowdfundContract);
+
       const newprojects = await crowdfundContract.getAllProjects();
 
       const project = newprojects[projectData.id];
@@ -161,7 +163,7 @@ const PageInfo = ({ projectInfo }) => {
           backer[0],
           backer[1],
           backer[2].toString(),
-          backer[3].toString(),
+          // backer[3].toString(),
         ];
       });
 
@@ -372,6 +374,7 @@ const PageInfo = ({ projectInfo }) => {
 
   const handleSelectToken = async (name, src) => {
     const tokenAddress = tokenToAddress[name];
+    console.log("token address: ", tokenAddress);
 
     const provider = await enableWeb3();
 
@@ -383,9 +386,14 @@ const PageInfo = ({ projectInfo }) => {
         provider
       );
 
+      console.log("token contract: ", tokenContract);
+
       balance = await tokenContract.balanceOf(account);
+      console.log("Balance: ", balance);
     } else {
       const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      console.log("Web3 Provider: ", web3Provider);
 
       balance = (await web3Provider.getBalance(account)).toString();
     }
@@ -565,19 +573,6 @@ const PageInfo = ({ projectInfo }) => {
     setPledgeAmount(pledgeAmount);
   };
 
-  // console.log(
-  //   Number(projectData.amountRaisedInDollars) == 0 &&
-  //     projectData.status == "Unsuccessful" &&
-  //     !projectData.isClaimed &&
-  //     !projectData.isRefunded
-  // );
-
-  // console.log("Project data.contractStatus: ", projectData.contractStatus);
-
-  // console.log("All Projects::::::::::::::::: ",allProjects)
-
-  // const newImageUrl = replaceIpfsGateway(projectInfo.projectImageUrl)
-
   const newImageUrl = `https://amethyst-intimate-swallow-509.mypinata.cloud/ipfs/${projectInfo.projectImageUrl}`;
 
   return (
@@ -702,12 +697,20 @@ const PageInfo = ({ projectInfo }) => {
             </div>
 
             {projectData.secondsLeft > 0 && (
-              <button
-                className="my-6 w-full rounded-md p-2 bg-green-200 text-green-800"
-                onClick={handleSupport}
-              >
-                Support this Project
-              </button>
+              <div className="flex space-x-3">
+                <button
+                  className="my-6 w-full rounded-md p-2 bg-green-200 text-green-800"
+                  onClick={handleSupport}
+                >
+                  Donate with Crypto
+                </button>
+                <button
+                  className="my-6 w-full rounded-md p-2 bg-yellow-200 text-yellow-800"
+                  onClick={handleSupport}
+                >
+                  Donate with Naira
+                </button>
+              </div>
             )}
 
             {Number(projectData.amountRaisedInDollars) == 0 &&

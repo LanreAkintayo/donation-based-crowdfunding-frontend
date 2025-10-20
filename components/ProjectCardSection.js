@@ -8,7 +8,12 @@ import { useRouter } from "next/router";
 import { ScaleLoader } from "react-spinners";
 
 export default function ProjectCardSection() {
-  const { isWeb3Enabled, chainId: chainIdHex, enableWeb3, Moralis } = useMoralis();
+  const {
+    isWeb3Enabled,
+    chainId: chainIdHex,
+    enableWeb3,
+    Moralis,
+  } = useMoralis();
   const { switchNetwork, chain, account } = useChain();
   const router = useRouter();
 
@@ -22,45 +27,78 @@ export default function ProjectCardSection() {
       ? contractAddresses[chainId][length - 1]
       : null;
 
-  const { runContractFunction: getAllProjects, isFetching, isLoading } =
-    useWeb3Contract({
-      abi,
-      contractAddress: crowdfundAddress,
-      functionName: "getAllProjects",
-      params: {},
-    });
+  const {
+    runContractFunction: getAllProjects,
+    isFetching,
+    isLoading,
+  } = useWeb3Contract({
+    abi,
+    contractAddress: crowdfundAddress,
+    functionName: "getAllProjects",
+    params: {},
+  });
 
   const fetcher = async () => {
     if (!isWeb3Enabled || !crowdfundAddress) return [];
 
     const provider = await enableWeb3();
-    const crowdfundContract = new ethers.Contract(crowdfundAddress, abi, provider);
+    const crowdfundContract = new ethers.Contract(
+      crowdfundAddress,
+      abi,
+      provider
+    );
+
+    console.log("Crowdfund address: ", crowdfundAddress)
 
     // Fetch all projects from contract
     const projects = await getAllProjects({
       onError: (error) => console.log("getAllProjects error:", error),
     });
 
+    // console.log("Projects: ", projects);
+
+
     if (!projects || projects.length === 0) return [];
 
     const now = Math.floor(Date.now() / 1000);
 
+
+    console.log("Are we here? ");
+
+    console.log("All projects: ", projects)
+
     const allProjects = await Promise.all(
       projects.map(async (project) => {
         try {
-          const [amountRaisedInDollars, backers, currentProject] = await Promise.all([
-            crowdfundContract.getTotalAmountRaisedInDollars(project.id),
-            crowdfundContract.getBackers(project.id),
-            crowdfundContract.projects(project.id),
-          ]);
 
-          const [,,,,,,,,, isFinalized, isClaimed, isRefunded] = currentProject;
+          console.log("Project.id: ", Number(project.id))
+
+          const amountRaised = await crowdfundContract.getTotalAmountRaisedInDollars(
+            Number(project.id)
+          );
+          console.log("Amount raised: ", amountRaised)
+
+          const newBackers = await crowdfundContract.getBackers(Number(project.id));
+
+          console.log("New backers: ", newBackers)
+
+          const [amountRaisedInDollars, backers, currentProject] =
+            await Promise.all([
+              crowdfundContract.getTotalAmountRaisedInDollars(project.id),
+              crowdfundContract.getBackers(Number(project.id)),
+              crowdfundContract.projects(project.id),
+            ]);
+
+            console.log("Now we are here")
+
+          const [, , , , , , , , , isFinalized, isClaimed, isRefunded] =
+            currentProject;
 
           const editedBackers = backers.map((backer) => [
             backer[0],
             backer[1],
             backer[2].toString(),
-            backer[3].toString(),
+            // backer[3].toString(),
           ]);
 
           let secondsLeft = 0;
@@ -69,7 +107,10 @@ export default function ProjectCardSection() {
           if (now > Number(project.endDay)) {
             if (project.contractStatus === 1) {
               status = "Successful";
-            } else if (project.contractStatus === 2 || Number(amountRaisedInDollars) === 0) {
+            } else if (
+              project.contractStatus === 2 ||
+              Number(amountRaisedInDollars) === 0
+            ) {
               status = "Unsuccessful";
             } else {
               status = "Closed";
@@ -91,7 +132,8 @@ export default function ProjectCardSection() {
             amountRaisedInDollars: amountRaisedInDollars.toString(),
             secondsLeft,
             status,
-            percentFunded: percentFunded >= 100 ? 100 : Math.floor(percentFunded),
+            percentFunded:
+              percentFunded >= 100 ? 100 : Math.floor(percentFunded),
             backers: editedBackers,
             isFinalized,
             isClaimed,
@@ -151,9 +193,14 @@ export default function ProjectCardSection() {
             } grid-cols-1 sm:grid-rows-2 sm:grid-cols-2 lg:grid-rows-1 lg:grid-cols-4 xs:grid-rows-1 xs:grid-cols-4 gap-2 justify-start w-full`}
           >
             {isHome
-              ? allProjects.slice(0, 4).map((projectInfo) => (
-                  <ProjectCard key={projectInfo.id} projectInfo={projectInfo} />
-                ))
+              ? allProjects
+                  .slice(0, 4)
+                  .map((projectInfo) => (
+                    <ProjectCard
+                      key={projectInfo.id}
+                      projectInfo={projectInfo}
+                    />
+                  ))
               : allProjects.map((projectInfo) => (
                   <ProjectCard key={projectInfo.id} projectInfo={projectInfo} />
                 ))}
