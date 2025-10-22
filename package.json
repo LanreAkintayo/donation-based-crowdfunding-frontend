@@ -43,7 +43,8 @@
     "sassy-datepicker": "^0.9.0",
     "swr": "^1.3.0",
     "tailwind-scrollbar-hide": "^1.1.7",
-    "web3uikit": "^0.1.159"
+    "web3uikit": "^0.1.159",
+    "react-paystack": "^3.0.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.8",

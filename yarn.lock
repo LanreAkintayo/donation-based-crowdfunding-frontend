@@ -11569,6 +11569,11 @@ react-onclickoutside@^6.13.0:
   resolved "https://registry.yarnpkg.com/react-onclickoutside/-/react-onclickoutside-6.13.1.tgz#1f5e0241c08784b6e65745d91aca0d700c548a89"
   integrity sha512-LdrrxK/Yh9zbBQdFbMTXPp3dTSN9B+9YJQucdDu3JNKRrbdU+H+/TVONJoWtOwy4II8Sqf1y/DTI6w/vGPYW0w==
 
+react-paystack@^3.0.0:
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/react-paystack/-/react-paystack-3.0.5.tgz#e257c6871bc525978f7a4c29e5a016c0f71157e4"
+  integrity sha512-4cswo2iMToFs0eVmLRGlYRhlAFIs0MrfIOEO/RO20Y58ryre+DHd2tHqyLRWmlX3SOs5eYr/38z/L1quk6O6ZA==
+
 react-popper@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/react-popper/-/react-popper-2.3.0.tgz#17891c620e1320dce318bad9fede46a5f71c70ba"

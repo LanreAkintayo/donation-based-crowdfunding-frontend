@@ -2,12 +2,10 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
-import { create } from "ipfs-http-client";
 import { contractAddresses, abi } from "../constants";
 import { useMoralis, useWeb3Contract } from "react-moralis";
 import { ethers } from "ethers";
 import { RotateLoader, ClipLoader } from "react-spinners";
-import { useNotification } from "web3uikit";
 import { usePromiseTracker, trackPromise } from "react-promise-tracker";
 import { now, now2, sDuration } from "../utils/helper";
 
@@ -18,32 +16,11 @@ import ModalSuccess from "../components/ModalSuccess";
 import ModalFailure from "../components/ModalFailure";
 import axios from "axios";
 
-
-// import DatePicker from "sassy-datepicker";
-
-/* Create an instance of the client */
-// const client = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' })
-// const client = create('https://ipfs.infura.io:5001/api/v0')
-
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 const projectSecret = process.env.NEXT_PUBLIC_API_SECRET_KEY;
 
-console.log(projectId);
-console.log(projectSecret);
-
-const auth =
-  "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
-
-const client = create({
-  host: "ipfs.infura.io",
-  port: 5001,
-  protocol: "https",
-  headers: {
-    authorization: auth,
-  },
-});
-
-console.log("Client: ", client);
+// console.log(projectId);
+// console.log(projectSecret);
 
 const Launch = () => {
   const {
@@ -86,6 +63,12 @@ const Launch = () => {
     duration: "",
     goal: "",
   });
+  const [banks, setBanks] = useState([]);
+  const [bankCode, setBankCode] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState("");
 
   // console.log("Date at the beggining that was set::::", new Date());
   const [isValidDuration, setIsValidDuration] = useState(true);
@@ -94,6 +77,30 @@ const Launch = () => {
 
   const [launchText, setLaunchText] = useState("Publish Your Project");
   const [isLaunching, setIsLaunching] = useState(false);
+
+  const [authToken, setAuthToken] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    setAuthToken(token);
+  }, []);
+
+  // console.log("Banks: ", banks);
+
+  useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const response = await axios.get(`${apiUrl}/api/payments/banks`);
+
+        // console.log("Bank response: ", response.data);
+        setBanks(response.data); // Paystack nests the list in 'data'
+      } catch (error) {
+        console.error("Failed to fetch banks", error);
+      }
+    };
+    fetchBanks();
+  }, []);
 
   useEffect(() => {
     console.log("Here is the current url: ", currentUrl);
@@ -106,53 +113,58 @@ const Launch = () => {
   }, [currentUrl]);
 
   useEffect(() => {
-    setAllValid(
-      Object.values(projectInfo).every(
-        (item) => ![false, 0, null, "", {}].includes(item)
-      ) &&
-        isValidDuration &&
-        // isValidLaunchDate &&
-        isValidGoal
-    );
-  }, [projectInfo, isValidDuration, isValidLaunchDate]);
+    setAccountName("");
+    setVerifyError("");
 
-  // Programatically click the hidden file input element
-  // when the Button component is clicked
+    // 2. Check if the inputs are valid
+    if (bankCode && accountNumber.length === 10) {
+      console.log("about to handle verifiy account");
+      handleVerifyAccount();
+    }
+  }, [bankCode, accountNumber]);
+
+  // // Original
+  // useEffect(() => {
+  //   setAllValid(
+  //     Object.values(projectInfo).every(
+  //       (item) => ![false, 0, null, "", {}].includes(item)
+  //     ) &&
+  //       isValidDuration &&
+  //       isValidGoal &&
+  //       accountName
+  //   );
+  // }, [projectInfo, isValidDuration, isValidGoal, accountName]);
+
+  useEffect(() => {
+    setAllValid(true);
+  }, [projectInfo, isValidDuration, isValidGoal]);
+
   const handleClick = (event) => {
     hiddenFileInput.current.click();
   };
 
   const handleOnChange = async (event) => {
-    console.log("Thread is here");
+    const { id, value } = event.target;
+
+    if (event.target.id === "bankCode") {
+      setBankCode(value);
+      setAccountName("");
+      setVerifyError("");
+      return;
+    }
+    if (event.target.id === "accountNumber") {
+      setAccountNumber(value);
+      setAccountName("");
+      setVerifyError("");
+      return;
+    }
+
     let imagePath;
     let amount;
 
     if (event.target.id == "imageSrc") {
       imagePath = event.target.files[0] || "";
       setImageFile(imagePath);
-
-      // console.log("imagePath: ", imagePath);
-      // const uploadedImage = await trackPromise(client.add(imageFile));
-      // const url = `https://cloudflare-ipfs.com/ipfs/${uploadedImage.path}`;
-      // console.log("This must display: ", url);
-      // setCurrentUrl(url);
-
-      // let promise = new Promise(async (resolve, reject) => {
-      //   const uploadedImage = await client.add(imageFile);
-      //   console.log("Inside promise: ", uploadedImage)
-      //   resolve(uploadedImage);
-      // });
-
-      // promise
-      //   .then((uploadedImage) => {
-      //     console.log("Iniside then: ", uploadedImage)
-      //     const url = `https://cloudflare-ipfs.com/ipfs/${uploadedImage.path}`;
-      //     console.log(url);
-      //     setCurrentUrl(url);
-      //   })
-      //   .catch((error) => {
-      //     console.log(error);
-      //   });
     }
 
     if (event.target.id == "duration") {
@@ -195,11 +207,37 @@ const Launch = () => {
     });
   };
 
-  // useEffect(() => {
-  //   console.log("Project: ", project);
-  // }, [project]);
+  const handleVerifyAccount = async () => {
+    if (accountNumber.length !== 10 || !bankCode) {
+      setVerifyError(
+        "Please select a bank and enter a 10-digit account number."
+      );
+      return;
+    }
+    setIsVerifying(true);
+    setVerifyError("");
+    setAccountName("");
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  const getHash = async (file) => { 
+      const response = await axios.post(
+        `${apiUrl}/api/payments/resolve`,
+        { accountNumber, bankCode },
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
+      setAccountName(response.data.data.account_name);
+    } catch (error) {
+      setVerifyError(
+        error.response?.data?.message ||
+          "Could not verify account. Check details."
+      );
+      setAccountName("");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const getHash = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("network", "public");
@@ -220,9 +258,18 @@ const Launch = () => {
     setIsLaunching(true);
     setLaunchText("Publishing Project");
 
-    console.log("Date when launching:: ", projectInfo.launchDate);
+    // Check if the token exists
+    if (!authToken) {
+      setFailureMessage(
+        "You are not logged in. Please log in to create a campaign."
+      );
+      setIsLaunching(false);
+      setLaunchText("Publish Your Project");
+      return;
+    }
 
-    // debugger
+    let newCampaign; // To store the campaign data from the backend
+
     const goalInDollars = projectInfo.goal.replace(/[^0-9]/g, "");
     const startDayInSeconds = Math.floor(
       projectInfo.launchDate.getTime() / 1000
@@ -231,19 +278,59 @@ const Launch = () => {
     const duration = sDuration.minutes(Number(projectInfo.duration));
 
     console.log("duration is", duration);
+
     // console.log(startDayInSeconds);
 
+    // Phase 1: Create off-chain data
+    // This creates the paystack subaccount and saves the campaign to the database with a status of pending
+    try {
+      setLaunchText("Securing campaign details...");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+      console.log("API URL:", apiUrl);
+
+      const response = await axios.post(
+        `${apiUrl}/api/campaigns`,
+        {
+          title: projectInfo.title,
+          description: projectInfo.note,
+          goalAmount: projectInfo.goal.replace(/[^0-9]/g, ""),
+          bankCode: bankCode,
+          accountNumber: accountNumber,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`, // Send the user's login token
+          },
+        }
+      );
+
+      newCampaign = response.data.data; // Save the new campaign (we need its _id)
+    } catch (error) {
+      console.error(
+        "Failed to create campaign on backend:",
+        error.response?.data || error.message
+      );
+      setFailureMessage(
+        error.response?.data?.message ||
+          "Failed to save campaign. Please try again."
+      );
+      setIsLaunching(false);
+      setLaunchText("Publish Your Project");
+      return; // Stop if the backend fails
+    }
+
+    // PHASE 2: Create on-chain data (smart contract). This only runs if phase 1 was successful
     try {
       setLaunchText("Uploading data to IPFS");
-      // const uploadedImage = await trackPromise(client.add(imageFile));
 
       // console.log("Uploaded Image: ", uploadedImage);
 
       const res = await getHash(imageFile);
-      const hash = res.data.data.cid
+      const hash = res.data.data.cid;
 
-      console.log("Res: ", res)
-      console.log("Hash: ", hash)
+      console.log("Res: ", res);
+      console.log("Hash: ", hash);
       // const url = `https://cloudflare-ipfs.com/ipfs/${uploadedImage.path}`;
 
       setLaunchText("Publishing Project");
@@ -255,73 +342,110 @@ const Launch = () => {
           functionName: "launch",
           params: {
             startDay: startDayInSeconds,
-            // startDay: 1662728516,
             duration,
-            // duration: "1662813871",
             goal: ethers.utils.parseEther(goalInDollars),
             projectTitle: projectInfo.title,
             projectSubtitle: projectInfo.subtitle,
             projectNote: projectInfo.note,
             projectImageUrl: hash,
-            // projectImageUrl: currentUrl,
           },
         },
-        onSuccess: handleSuccess,
+        // onSuccess: (tx) => handleSuccess(tx),
+        onSuccess: (tx) => handleSuccess(tx, newCampaign._id, authToken),
         onError: (error) => {
-          handleFailure(error);
+          // handleFailure(error);
+          handleFailure(error, newCampaign._id);
         },
       });
     } catch (error) {
       console.log(error);
       window.alert("Make sure you have an internet connection");
-      setIsLaunching(false)
-      setLaunchText("Publish Project")
+      setIsLaunching(false);
+      setLaunchText("Publish Project");
     }
-
-    // const { runContractFunction: getAllProjects } = useWeb3Contract({
-    //   abi: abi,
-    //   contractAddress: crowdfundAddress, // specify the networkId
-    //   functionName: "getAllProjects",
-    //   params: {},
-    // });
-
-    // const projects = await getAllProjects({
-    //   onSuccess: () => {console.log("Successful")},
-    //   onError: (error) => console.log(error),
-    // })
-
-    // console.log(projects)
-
-    //   await launch({
-    //     // onComplete:
-    //     // onError:
-    //     onSuccess: () => {console.log("Successful")},
-    //     onError: (error) => console.log(error),
-    // })
   };
 
   // Probably could add some error handling
-  const handleSuccess = async (tx) => {
-    console.log("Success transaction: ", tx);
-    const txReceipt = await trackPromise(tx.wait(1));
-    // updateUIValues()
-    setLaunchText("Publish Your Project");
-    setIsLaunching(false);
+  // const handleSuccess = async (tx, campaignDbId, authToken) => {
+  //   console.log("Success transaction: ", tx);
 
-    console.log("TransactionReceipt: ", txReceipt);
+  // const txReceipt = await trackPromise(tx.wait(1));
+  // console.log("TransactionReceipt: ", txReceipt);
 
-    // displayToast("success", "Project has been launched successfully");
-    setSuccessMessage("Project has been launched");
-    setTransactionHash(txReceipt.transactionHash);
-    // setTransactionHash()
-    // dispatch({
-    //   type: "success",
-    //   message: "Transaction Completed!",
-    //   title: "Transaction Notification",
-    //   position: "topR",
-    // });
+  // const campaignIdInHex = txReceipt.events[0].topics[1].toString();
+  // const campaignId = ethers.BigNumber.from(campaignIdInHex).toNumber();
+  // console.log("CampaignId: ", campaignId);
+
+  //   // Update the campaign in the database
+  //   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  //   await axios.patch(
+  //     `${apiUrl}/api/campaigns/${campaignDbId}/activate`,
+  //     { campaignId: campaignId }, // Send the on-chain ID
+  //     {
+  //       headers: {
+  //         Authorization: `Bearer ${authToken}`, // Send the user's login token
+  //       },
+  //     }
+  //   );
+
+  //   // updateUIValues()
+  //   setLaunchText("Publish Your Project");
+  //   setIsLaunching(false);
+
+  //   // displayToast("success", "Project has been launched successfully");
+  //   setSuccessMessage("Project has been launched");
+  //   setTransactionHash(txReceipt.transactionHash);
+  // };
+
+  const handleSuccess = async (tx, campaignDbId, authToken) => {
+    try {
+      setLaunchText("Finalizing campaign..."); // Update status
+      console.log("Success transaction: ", tx);
+
+      const txReceipt = await trackPromise(tx.wait(1));
+      console.log("TransactionReceipt: ", txReceipt);
+
+      // const campaignId = txReceipt.events[0].args[0].toString();
+      // console.log("On-Chain CampaignId: ", campaignId);
+
+      const campaignIdInHex = txReceipt.events[0].topics[1].toString();
+      const campaignId = ethers.BigNumber.from(campaignIdInHex).toNumber();
+      console.log("CampaignId: ", campaignId);
+
+      //uncomment this too.
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      await axios.patch(
+        `${apiUrl}/api/campaigns/${campaignDbId}/activate`,
+        { campaignId: campaignId }, // Send the on-chain ID
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`, // Send the user's login token
+          },
+        }
+      );
+
+      setSuccessMessage("Project has been launched!");
+      setTransactionHash(txReceipt.transactionHash);
+    } catch (error) {
+      console.error("Error finalizing campaign after success:", error);
+
+      const backendErrorMessage = error.response?.data?.message;
+
+      setFailureMessage(
+        backendErrorMessage ||
+          "Your project is on-chain, but failed to update on our site. Please contact support."
+      );
+
+      if (error.receipt) {
+        setTransactionHash(error.receipt.transactionHash);
+      }
+    } finally {
+      setLaunchText("Publish Your Project");
+      setIsLaunching(false);
+    }
   };
 
+  // const handleFailure = async (error, campaignDbId) => {
   const handleFailure = async (error) => {
     console.log("Error: ", error);
     setLaunchText("Publish Your Project");
@@ -329,13 +453,6 @@ const Launch = () => {
 
     // displayToast("failure", "Failed to launch Project");
     setFailureMessage("Failed to launch project");
-
-    // dispatch({
-    //   type: "error",
-    //   message: "Transation Failed",
-    //   title: "Transaction Notification",
-    //   position: "topR",
-    // });
   };
 
   const handleCloseModal = () => {
@@ -417,7 +534,7 @@ const Launch = () => {
               </div>
             </div>
 
-            {/* --- Section 2: Description --- */}
+            {/* --- Description --- */}
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 rounded-lg bg-white p-8 shadow-sm ring-1 ring-slate-900/5 md:grid-cols-3">
               <div className="md:col-span-1">
                 <h2 className="text-lg font-semibold leading-7 text-slate-900">
@@ -445,7 +562,7 @@ const Launch = () => {
               </div>
             </div>
 
-            {/* --- Section 3: Project Image --- */}
+            {/* --- Project Image --- */}
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 rounded-lg bg-white p-8 shadow-sm ring-1 ring-slate-900/5 md:grid-cols-3">
               <div className="md:col-span-1">
                 <h2 className="text-lg font-semibold leading-7 text-slate-900">
@@ -513,7 +630,98 @@ const Launch = () => {
               </div>
             </div>
 
-            {/* --- Section 4: Funding & Duration --- */}
+            {/* --- Payout Details --- */}
+            <div className="grid grid-cols-1 gap-x-8 gap-y-10 rounded-lg bg-white p-8 shadow-sm ring-1 ring-slate-900/5 md:grid-cols-3">
+              <div className="md:col-span-1">
+                <h2 className="text-lg font-semibold leading-7 text-slate-900">
+                  Payout Details
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-slate-500">
+                  This is the Nigerian bank account where your Naira funds will
+                  be sent. We'll verify the account name to make sure it's
+                  correct.
+                </p>
+              </div>
+
+              <div className="md:col-span-2">
+                <div className="grid grid-cols-1 gap-y-8 gap-x-6 sm:grid-cols-3">
+                  {/* Bank Name */}
+                  <div className="sm:col-span-3">
+                    <label
+                      htmlFor="bankCode"
+                      className="block text-sm font-medium leading-6 text-slate-900"
+                    >
+                      Bank Name
+                    </label>
+                    <select
+                      id="bankCode"
+                      name="bankCode"
+                      value={bankCode}
+                      onChange={handleOnChange}
+                      className="mt-2 block w-full rounded-md border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                    >
+                      <option value="">Select your bank</option>
+                      <option value="001">Test Bank</option>
+
+                      {banks &&
+                        banks.length > 0 &&
+                        banks.map((bank) => (
+                          <option key={bank.id} value={bank.code}>
+                            {bank.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  {/* Account Number (Now full width) */}
+                  <div className="sm:col-span-3">
+                    <label
+                      htmlFor="accountNumber"
+                      className="block text-sm font-medium leading-6 text-slate-900"
+                    >
+                      Account Number
+                    </label>
+                    <input
+                      type="text"
+                      name="accountNumber"
+                      id="accountNumber"
+                      value={accountNumber}
+                      onChange={handleOnChange}
+                      maxLength={10}
+                      className="mt-2 block w-full rounded-md border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                      placeholder="0123456789"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-3">
+                    {isVerifying && (
+                      <div className="mt-2 flex items-center space-x-2">
+                        <ClipLoader color="#475569" loading={true} size={20} />
+                        <span className="text-sm text-slate-500">
+                          Verifying...
+                        </span>
+                      </div>
+                    )}
+                    {accountName && (
+                      <div className="mt-2 rounded-md bg-green-50 p-4">
+                        <p className="text-sm font-medium text-green-800">
+                          {accountName}
+                        </p>
+                      </div>
+                    )}
+                    {verifyError && (
+                      <div className="mt-2 rounded-md bg-red-50 p-4">
+                        <p className="text-sm font-medium text-red-800">
+                          {verifyError}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* --- Funding & Duration --- */}
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 rounded-lg bg-white p-8 shadow-sm ring-1 ring-slate-900/5 md:grid-cols-3">
               <div className="md:col-span-1">
                 <h2 className="text-lg font-semibold leading-7 text-slate-900">
@@ -614,12 +822,13 @@ const Launch = () => {
               </div>
             </div>
 
-            {/* --- Section 5: Launch Button --- */}
+            {/* --- Launch Button --- */}
             <div className="flex items-center justify-end pt-6 border-t border-slate-900/10">
               <button
                 type="button"
                 onClick={handleLaunch}
-                disabled={!allValid || isLaunching}
+                // disabled={!allValid || isLaunching}
+                disabled={false}
                 className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isLaunching ? (

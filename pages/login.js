@@ -51,7 +51,7 @@ const Login = () => {
       }
 
       // **IMPORTANT**: Store the token (the VIP wristband)
-      localStorage.setItem('token', data.token);
+      localStorage.setItem('authToken', data.token);
 
       alert('Login successful!');
       router.push('/'); // Redirect to the user's dashboard
