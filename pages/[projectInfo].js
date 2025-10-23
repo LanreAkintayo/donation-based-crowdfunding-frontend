@@ -21,47 +21,9 @@ import { getProjectInfo } from "../lib/fetchProjectInfo";
 import Layout from "./layout";
 import ModalSuccess from "../components/ModalSuccess";
 import ModalFailure from "../components/ModalFailure";
+import axios from "axios";
+import NairaSupportModal from "../components/NairaSupportModal";
 // import { getAllProjects } from "../lib/projects";
-
-const supportedTokens = [
-  { name: "BNB", src: "/bnb.svg" },
-  { name: "BUSD", src: "/busd.svg" },
-  { name: "DAI", src: "/dai.png" },
-  { name: "XRP", src: "/xrp.png" },
-];
-
-// const tokenToAddress = {
-//   BNB: "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",
-//   BUSD: "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee",
-//   DAI: "0xEC5dCb5Dbf4B114C9d0F65BcCAb49EC54F6A0867",
-//   XRP: "0xa83575490D7df4E2F47b7D38ef351a2722cA45b9",
-// };
-
-function replaceIpfsGateway(url) {
-  // Replace the old gateway with the new one
-  return url.replace(
-    "https://cloudflare-ipfs.com/ipfs/",
-    "https://gateway.pinata.cloud/ipfs/"
-  );
-}
-
-const time = ((milliseconds) => {
-  const SEC = 1e3;
-  const MIN = SEC * 60;
-  const HOUR = MIN * 60;
-  const DAY = HOUR * 24;
-  return (time) => {
-    const ms = Math.abs(time);
-    const d = (ms / DAY) | 0;
-    const h = ((ms % DAY) / HOUR) | 0;
-    const m = ((ms % HOUR) / MIN) | 0;
-    const s = ((ms % MIN) / SEC) | 0;
-    return `${time < 0 ? "-" : ""}${d} Days ${h} Hours ${
-      h == 0 ? `${m} Minutes` : ""
-    }`;
-    // ${m}Minute(s) ${s}Second(s)
-  };
-})();
 
 function time2(seconds) {
   const days = Math.floor(seconds / 86400);
@@ -96,6 +58,7 @@ const PageInfo = ({ projectInfo }) => {
   } = useMoralis();
 
   const [supportModalOpen, setSupportModalOpen] = useState(false);
+  const [nairaSupportModalOpen, setNairaSupportModalOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState({});
   const [pledgeAmount, setPledgeAmount] = useState();
   const [isValidAmount, setIsValidAmount] = useState(false);
@@ -114,6 +77,18 @@ const PageInfo = ({ projectInfo }) => {
   const [failureMessage, setFailureMessage] = useState("");
   const [transactionHash, setTransactionHash] = useState("");
 
+  const [campaign, setCampaign] = useState(null);
+  const [nairaDonations, setNairaDonations] = useState([]);
+
+  const [totalAmountRaisedInNaira, setTotalAmountRaisedInNaira] = useState(0);
+  const [percentFunded, setPercentFunded] = useState(0);
+  const [goalInNaira, setGoalInNaira] = useState(0);
+
+  console.log("Naira donations: ", nairaDonations)
+  // console.log("Total amount raised in Naira: ", totalAmountRaisedInNaira);
+  // console.log("Percent funded: ", percentFunded);
+  // console.log("Goal in Naira: ", goalInNaira);
+
   const handleCloseModal = () => {
     setSuccessMessage("");
     setFailureMessage("");
@@ -122,6 +97,75 @@ const PageInfo = ({ projectInfo }) => {
   const [projectData, setProjectData] = useState({
     ...projectInfo,
   });
+
+  console.log("Project data: ", projectData);
+
+
+  useEffect(() => {
+    if (campaign && projectData) {
+      const dollarToNaira = 1500; // Example conversion rate: 1 USD = 1500 NGN
+
+      // const goalInUSD = Number(projectData.goal);
+      const goalInUSD = Number(
+        ethers.utils.formatEther(projectData.goal || "0")
+      );
+
+      const nairaRaisedDirectly = campaign.amountRaised / 100; // e.g., 1000000 Kobo -> 10000 NGN
+
+      let cryptoRaisedInNaira = 0;
+      try {
+        const cryptoRaisedInUSD = Number(
+          ethers.utils.formatEther(projectData.amountRaisedInDollars || "0")
+        );
+        cryptoRaisedInNaira = cryptoRaisedInUSD * dollarToNaira;
+      } catch (e) {
+        console.error("Error formatting crypto amount:", e);
+      }
+
+      // Calculate Total Raised in Naira
+      const totalNaira = nairaRaisedDirectly + cryptoRaisedInNaira;
+      setTotalAmountRaisedInNaira(totalNaira);
+
+      //  Calculate Goal in Naira
+      const goalInNaira = goalInUSD * dollarToNaira;
+      setGoalInNaira(goalInNaira);
+
+      //  Calculate Percentage Funded
+      let percentage = 0;
+      if (goalInNaira > 0) {
+        percentage = (totalNaira / goalInNaira) * 100;
+      }
+      // Ensure percentage doesn't exceed 100 if they raise more than the goal
+      setPercentFunded(Math.min(percentage, 100).toFixed(2));
+    }
+  }, [campaign, projectData]);
+
+  // Get the campaign from the database;
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      if (!projectData.id) return; // Wait for router to be ready
+
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const response = await axios.get(
+          `${apiUrl}/api/campaigns/${projectData.id}`
+        );
+        const campaign = response.data.data;
+        setCampaign(campaign);
+
+        // Fetch Naira donations
+        const donationsResponse = await axios.get(
+          `${apiUrl}/api/campaigns/${projectData.id}/donations`
+        );
+        setNairaDonations(donationsResponse.data.data);
+      } catch (error) {
+        console.error("Failed to fetch campaign:", error);
+      } finally {
+      }
+    };
+
+    fetchCampaign();
+  }, [projectData]);
 
   const { data: xyz, error } = useSWR(
     () => (isWeb3Enabled ? "web3/currentProject" : null),
@@ -159,12 +203,7 @@ const PageInfo = ({ projectInfo }) => {
       const backers = await crowdfundContract.getBackers(id);
 
       const editedBackers = backers.map((backer) => {
-        return [
-          backer[0],
-          backer[1],
-          backer[2].toString(),
-          // backer[3].toString(),
-        ];
+        return [backer[0], backer[1], backer[2].toString()];
       });
 
       const isFinalized = (await crowdfundContract.projects(id))[9];
@@ -191,18 +230,6 @@ const PageInfo = ({ projectInfo }) => {
         secondsLeft =
           Number(endDay) -
           Number(Math.floor(Number(new Date().getTime() / 1000)));
-
-        console.log("Number(endDay): ", Number(endDay));
-        console.log(
-          "Current date: ",
-          Number(Math.floor(Number(new Date().getTime() / 1000)))
-        );
-
-        console.log(
-          "Seconds remaining: ",
-          Number(endDay) -
-            Number(Math.floor(Number(new Date().getTime() / 1000)))
-        );
       } else {
         status = "Pending";
         secondsLeft = 0;
@@ -264,9 +291,9 @@ const PageInfo = ({ projectInfo }) => {
 
   let color;
 
-  if (projectData.percentFunded > 70) {
+  if (percentFunded > 70) {
     color = "bg-green-700";
-  } else if (projectData.percentFunded > 50) {
+  } else if (percentFunded > 50) {
     color = "bg-yellow-600";
   } else {
     color = "bg-red-600";
@@ -319,7 +346,7 @@ const PageInfo = ({ projectInfo }) => {
         backer[1],
         backer[2].toString(),
       ]);
-      return [backer[0], backer[1], backer[2].toString(), backer[3].toString()];
+      return [backer[0], backer[1], backer[2].toString()];
     });
 
     let secondsLeft;
@@ -365,6 +392,14 @@ const PageInfo = ({ projectInfo }) => {
 
   const handleSupport = () => {
     setSupportModalOpen(true);
+  };
+
+  const handleNairaSupport = () => {
+    setNairaSupportModalOpen(true);
+  };
+
+  const handleCloseNairaSupportModal = () => {
+    setNairaSupportModalOpen(false);
   };
 
   const handleCloseSupportModal = () => {
@@ -440,14 +475,7 @@ const PageInfo = ({ projectInfo }) => {
     setPledgeText("Pledge");
     setIsPledging(false);
 
-    // displayToast("failure", "Failed to pledge");
     setFailureMessage("Failed to pledge");
-    // dispatch({
-    //   type: "error",
-    //   message: "Pledging Failed",
-    //   title: "Transaction Notification",
-    //   position: "topR",
-    // });
   };
 
   const handlePledge = async () => {
@@ -462,9 +490,6 @@ const PageInfo = ({ projectInfo }) => {
         pledgeAmount.replace(/[^0-9.]/g, "")
       );
       const tokenAddress = tokenToAddress[selectedToken.name];
-      // console.log(formattedPledgeAmount.toString());
-      // console.log(tokenAddress);
-
       const signer = provider.getSigner(account);
 
       const crowdfundContract = new ethers.Contract(
@@ -664,12 +689,12 @@ const PageInfo = ({ projectInfo }) => {
             <div className="bg-neutral-300 h-4 dark:bg-gray-700">
               <div
                 className={`${color} h-4 `}
-                style={{ width: `${projectData.percentFunded}%` }}
+                style={{ width: `${percentFunded}%` }}
               ></div>
             </div>
             <div className="flex justify-between mt-1 text-sm">
               <p className="bg-yellow-100 text-yellow-800 rounded-md p-2 px-3 ">
-                {projectData.percentFunded}% funded
+                {percentFunded}% funded
               </p>
               <p className="bg-green-100 text-green-800 rounded-md p-2 px-3 ">
                 {getNoOfBackers()}{" "}
@@ -679,10 +704,12 @@ const PageInfo = ({ projectInfo }) => {
             <div className="">
               <div className="flex flex-col mt-6">
                 <h1 className=" text-xl md:text-3xl text-gray-800">
-                  ${formattedAmountRaised}
+                  {/* ${formattedAmountRaised} */}₦
+                  {dollarUSLocale.format(totalAmountRaisedInNaira).toString()}
                 </h1>
                 <p className="text-sm text-gray-500">
-                  raised of ${formattedGoal}
+                  {/* raised of ${formattedGoal} */}
+                  raised of ₦{dollarUSLocale.format(goalInNaira).toString()}
                 </p>
               </div>
 
@@ -706,7 +733,7 @@ const PageInfo = ({ projectInfo }) => {
                 </button>
                 <button
                   className="my-6 w-full rounded-md p-2 bg-yellow-200 text-yellow-800"
-                  onClick={handleSupport}
+                  onClick={handleNairaSupport}
                 >
                   Donate with Naira
                 </button>
@@ -823,6 +850,12 @@ const PageInfo = ({ projectInfo }) => {
             isLoading={isLoadingSupport}
             isPledging={isPledging}
             pledgeText={pledgeText}
+          />
+        )}
+        {nairaSupportModalOpen && (
+          <NairaSupportModal
+            campaign={campaign}
+            handleCloseSupportModal={handleCloseNairaSupportModal}
           />
         )}
         {successMessage && (
