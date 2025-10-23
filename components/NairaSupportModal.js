@@ -9,6 +9,7 @@ export default function NairaSupportModal({
   handleCloseSupportModal,
 }) {
   const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState(""); // 1. Add state for display name
   const [amount, setAmount] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,6 +27,7 @@ export default function NairaSupportModal({
       setMessage("Thank you! Your donation has been recorded.");
       setTimeout(() => {
         setEmail("");
+        setDisplayName(""); // Reset display name
         setAmount("");
         setIsAnonymous(false);
         handleCloseSupportModal();
@@ -47,13 +49,17 @@ export default function NairaSupportModal({
     }
   };
 
+  // Conditionally set the display name based on anonymous status
+  const finalDisplayName = isAnonymous ? "Anonymous" : displayName;
+
   const componentProps = {
     email,
     amount: Number(amount) * 100,
     metadata: {
       campaignDbId: campaign._id,
-      campaignId: campaign.campaignId,
+      campaignId: campaign.campaignId, 
       isAnonymous: isAnonymous,
+      displayName: finalDisplayName, // 2. Add final display name to metadata
     },
     publicKey: publicKey,
     text: "Donate with Paystack",
@@ -62,7 +68,12 @@ export default function NairaSupportModal({
     onClose: handlePaystackClose,
   };
 
-  const isFormValid = email && amount && Number(amount) > 0;
+  // 3. Update form validation
+  const isFormValid =
+    email &&
+    amount &&
+    Number(amount) > 0 &&
+    (isAnonymous || (!isAnonymous && displayName)); // Require display name only if not anonymous
 
   return (
     <div className="fixed inset-0 z-50 bg-gray-900 bg-opacity-75 transition-opacity flex items-center justify-center">
@@ -106,6 +117,27 @@ export default function NairaSupportModal({
               />
             </div>
 
+            {/* Display Name Input (Only show if not anonymous) */}
+            {!isAnonymous && (
+              <div>
+                <label
+                  htmlFor="displayName"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Display Name
+                </label>
+                <input
+                  type="text"
+                  id="displayName"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  required={!isAnonymous} // Required only if not anonymous
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  placeholder="How you want your name to appear"
+                />
+              </div>
+            )}
+
             {/* Amount Input */}
             <div>
               <label
@@ -138,7 +170,7 @@ export default function NairaSupportModal({
                 htmlFor="anonymous"
                 className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
               >
-                Donate anonymously
+                Donate anonymously (display name will be hidden)
               </label>
             </div>
 

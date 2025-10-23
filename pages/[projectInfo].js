@@ -84,7 +84,7 @@ const PageInfo = ({ projectInfo }) => {
   const [percentFunded, setPercentFunded] = useState(0);
   const [goalInNaira, setGoalInNaira] = useState(0);
 
-  console.log("Naira donations: ", nairaDonations)
+  // console.log("Naira donations: ", nairaDonations)
   // console.log("Total amount raised in Naira: ", totalAmountRaisedInNaira);
   // console.log("Percent funded: ", percentFunded);
   // console.log("Goal in Naira: ", goalInNaira);
@@ -98,7 +98,7 @@ const PageInfo = ({ projectInfo }) => {
     ...projectInfo,
   });
 
-  console.log("Project data: ", projectData);
+  // console.log("Project data: ", projectData);
 
 
   useEffect(() => {
@@ -681,7 +681,7 @@ const PageInfo = ({ projectInfo }) => {
 
             {backers && projectData.backers && (
               <div>
-                <Backers backers={projectData.backers} />
+                <Backers backers={projectData.backers} nairaDonations={nairaDonations} />
               </div>
             )}
           </div>
