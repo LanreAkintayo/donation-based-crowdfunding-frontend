@@ -84,6 +84,11 @@ const PageInfo = ({ projectInfo }) => {
   const [percentFunded, setPercentFunded] = useState(0);
   const [goalInNaira, setGoalInNaira] = useState(0);
 
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [withdrawMessage, setWithdrawMessage] = useState("");
+
+  const [isOwner, setIsOwner] = useState(false);
+
   // console.log("Naira donations: ", nairaDonations)
   // console.log("Total amount raised in Naira: ", totalAmountRaisedInNaira);
   // console.log("Percent funded: ", percentFunded);
@@ -99,7 +104,6 @@ const PageInfo = ({ projectInfo }) => {
   });
 
   // console.log("Project data: ", projectData);
-
 
   useEffect(() => {
     if (campaign && projectData) {
@@ -568,6 +572,46 @@ const PageInfo = ({ projectInfo }) => {
     });
   };
 
+  const handleWithdrawNaira = async () => {
+    setIsWithdrawing(true);
+    setWithdrawMessage(""); // Clear previous messages
+    const authToken = localStorage.getItem("authToken");
+
+    if (!authToken) {
+      setWithdrawMessage("Error: You are not logged in.");
+      setIsWithdrawing(false);
+      return;
+    }
+    if (!campaign || !campaign.campaignId) {
+      setWithdrawMessage("Error: Campaign data not loaded.");
+      setIsWithdrawing(false);
+      return;
+    }
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      // Use the campaign's MongoDB _id for the API call
+      const response = await axios.post(
+        `${apiUrl}/api/payments/payout/${campaign.campaignId}`,
+        {}, // No body needed for this request
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      setWithdrawMessage(response.data.message); // Show success message from backend
+      // Optionally disable button further or update UI state
+    } catch (error) {
+      console.error("Withdrawal error:", error.response?.data || error.message);
+      setWithdrawMessage(
+        error.response?.data?.message || "Withdrawal failed. Please try again."
+      );
+    } finally {
+      setIsWithdrawing(false);
+    }
+  };
+
   const handleRefund = () => {
     refund({
       params: {
@@ -681,7 +725,10 @@ const PageInfo = ({ projectInfo }) => {
 
             {backers && projectData.backers && (
               <div>
-                <Backers backers={projectData.backers} nairaDonations={nairaDonations} />
+                <Backers
+                  backers={projectData.backers}
+                  nairaDonations={nairaDonations}
+                />
               </div>
             )}
           </div>
@@ -752,7 +799,7 @@ const PageInfo = ({ projectInfo }) => {
                 </button>
               )}
 
-            {projectData.status == "Closed" &&
+            {/* {projectData.status == "Closed" &&
               !projectData.isFinalized &&
               Number(projectData.amountRaisedInDollars) <
                 Number(projectData.goal) && (
@@ -781,12 +828,11 @@ const PageInfo = ({ projectInfo }) => {
                     </div>
                   )}
                 </button>
-              )}
-
-            {projectData.status == "Closed" &&
-              !projectData.isFinalized &&
-              Number(projectData.amountRaisedInDollars) >=
-                Number(projectData.goal) && (
+              )} */}
+            {/**Number(projectData.amountRaisedInDollars) >=
+                Number(projectData.goal) && */}
+            {projectData.status == "Closed" && !projectData.isFinalized && (
+              <div className="flex justify-center">
                 <button
                   className="my-6 w-full rounded-md p-2 text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
                   onClick={handleClaim}
@@ -802,17 +848,32 @@ const PageInfo = ({ projectInfo }) => {
                           {" "}
                           {promiseInProgress
                             ? "Wait a few Seconds"
-                            : "Claiming"}
+                            : "Withdrawing"}
                         </p>
                       </div>
                     </div>
                   ) : (
                     <div className="flex w-full bg-green-300 rounded-md items-center px-3 py-3">
-                      <p className="w-full">Claim Funds</p>
+                      <p className="w-full">Withdraw Crypto</p>
                     </div>
                   )}
                 </button>
-              )}
+                <button
+                  onClick={handleWithdrawNaira}
+                  disabled={isWithdrawing}
+                  className={`my-6 w-full rounded-md text-orange-800 disabled:cursor-not-allowed disabled:opacity-50 bg-orange-300`}
+                >
+                  {isWithdrawing ? (
+                    <>
+                      <ClipLoader color="#ffffff" loading={true} size={20} />
+                      <span className="ml-2">Initiating Payout...</span>
+                    </>
+                  ) : (
+                    "Withdraw Naira"
+                  )}
+                </button>
+              </div>
+            )}
 
             {projectData.status == "Pending" && (
               <button
