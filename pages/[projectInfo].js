@@ -890,7 +890,7 @@ const PageInfo = ({ projectInfo }) => {
                 className="my-6 w-full cursor-not-allowed rounded-md p-2 disabled:opacity-50 bg-yellow-200 text-yellow-800"
                 disabled={true}
               >
-                Project is Closed
+                {/* Project is Closed */}
               </button>
             )}
           </div>
