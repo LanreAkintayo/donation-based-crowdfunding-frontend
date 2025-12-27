@@ -254,6 +254,9 @@ const Launch = () => {
     return res;
   };
 
+    // console.log("account number: ", accountNumber)
+    // console.log("Bank code: ", bankCode);
+
   const handleLaunch = async () => {
     setIsLaunching(true);
     setLaunchText("Publishing Project");
@@ -278,6 +281,7 @@ const Launch = () => {
     const duration = sDuration.minutes(Number(projectInfo.duration));
 
     console.log("duration is", duration);
+  
 
     // console.log(startDayInSeconds);
 
