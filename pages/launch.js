@@ -19,8 +19,6 @@ import axios from "axios";
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 const projectSecret = process.env.NEXT_PUBLIC_API_SECRET_KEY;
 
-// console.log(projectId);
-// console.log(projectSecret);
 
 const Launch = () => {
   const {
@@ -642,7 +640,7 @@ const Launch = () => {
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-500">
                   This is the Nigerian bank account where your Naira funds will
-                  be sent. We'll verify the account name to make sure it's
+                  be sent. We&apos;ll verify the account name to make sure it&apos;s
                   correct.
                 </p>
               </div>
@@ -733,7 +731,7 @@ const Launch = () => {
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-500">
                   Set your funding goal, launch date, and campaign duration.
-                  Remember, you won't be able to change the duration after you
+                  Remember, you won&apos;t be able to change the duration after you
                   launch.
                 </p>
               </div>

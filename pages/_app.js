@@ -26,18 +26,21 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
+
+import { AuthProvider } from "../context/AuthContext";
+
 function MyApp({ Component, pageProps }) {
   const getLayout = Component.getLayout ?? ((page) => page);
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID_HERE";
-  // console.log("Google Client ID:", googleClientId);
+
   return (
     <MoralisProvider initializeOnMount={false}>
       <GoogleOAuthProvider clientId={googleClientId}>
-    
+        <AuthProvider>
             {getLayout(<Component {...pageProps} />)}
             <ToastContainer />
-
+        </AuthProvider>
       </GoogleOAuthProvider>
     </MoralisProvider>
   );

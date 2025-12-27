@@ -213,35 +213,293 @@
 //   );
 // }
 
+// import Link from "next/link";
+// import { ConnectButton } from "web3uikit";
+// import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
+// import "react-pro-sidebar/dist/css/styles.css";
+// import { useEffect, useState, useCallback } from "react";
+// import { useMoralis, useChain } from "react-moralis";
+// import { useRouter } from "next/router";
+// import { FaBars, FaTimes, FaExclamationTriangle } from "react-icons/fa";
+
+// // IMPORT YOUR NEW COMPONENTS
+// import LoginForm from "../components/LoginForm";
+// import SignupForm from "../components/SignupForm";
+
+// // --- AUTH MODAL COMPONENT ---
+// const AuthModal = ({ isOpen, onClose }) => {
+//   const [isSignUp, setIsSignUp] = useState(false);
+//   const router = useRouter();
+
+//   if (!isOpen) return null;
+
+// const handleAuthSuccess = (shouldRedirect = false) => {
+//     if (shouldRedirect) {
+//       // CASE 1: Google Login OR Normal Login
+//       onClose();
+//       router.push("/dashboard");
+//     } else {
+//       // CASE 2: Normal Signup
+//       setIsSignUp(false);
+//     }
+//   };
+
+//   return (
+//     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate__animated animate__fadeIn">
+//       <div className="bg-white text-zinc-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden relative animate__animated animate__zoomIn">
+//         <button
+//           onClick={onClose}
+//           className="absolute top-4 right-4 text-zinc-400 hover:text-red-500 transition-colors"
+//         >
+//           <FaTimes size={20} />
+//         </button>
+
+//         <div className="flex text-center border-b border-zinc-100">
+//           <div
+//             className={`flex-1 py-4 cursor-pointer font-bold ${
+//               !isSignUp
+//                 ? "text-orange-600 border-b-2 border-orange-600"
+//                 : "text-zinc-400 hover:text-zinc-600"
+//             }`}
+//             onClick={() => setIsSignUp(false)}
+//           >
+//             Login
+//           </div>
+//           <div
+//             className={`flex-1 py-4 cursor-pointer font-bold ${
+//               isSignUp
+//                 ? "text-orange-600 border-b-2 border-orange-600"
+//                 : "text-zinc-400 hover:text-zinc-600"
+//             }`}
+//             onClick={() => setIsSignUp(true)}
+//           >
+//             Sign Up
+//           </div>
+//         </div>
+
+//         <div className="p-8">
+//           <h2 className="text-2xl font-bold mb-2">
+//             {isSignUp ? "Create an Account" : "Welcome Back"}
+//           </h2>
+//           <p className="text-sm text-zinc-500 mb-6">
+//             {isSignUp ? "Join the funding revolution." : ""}
+//           </p>
+
+//           {/* DYNAMICALLY RENDER THE FORM */}
+//           {isSignUp ? (
+//             <SignupForm onSuccess={handleAuthSuccess} />
+//           ) : (
+//           <LoginForm onSuccess={() => handleAuthSuccess(true)} />
+//           )}
+
+//           <p
+//             className="text-center text-sm text-zinc-500 mt-6 cursor-pointer hover:underline"
+//             onClick={() => setIsSignUp(!isSignUp)}
+//           >
+//             {isSignUp
+//               ? "Already have an account? Login"
+//               : "Don't have an account? Sign Up"}
+//           </p>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// // --- HEADER COMPONENT (Kept Simple) ---
+// const useMediaQuery = (width) => {
+//   const [targetReached, setTargetReached] = useState(false);
+//   const updateTarget = useCallback((e) => {
+//     if (e.matches) setTargetReached(true);
+//     else setTargetReached(false);
+//   }, []);
+//   useEffect(() => {
+//     const media = window.matchMedia(`(max-width: ${width}px)`);
+//     media.addEventListener("change", updateTarget);
+//     if (media.matches) setTargetReached(true);
+//     return () => media.removeEventListener("change", updateTarget);
+//   }, []);
+//   return targetReached;
+// };
+
+// export default function Header() {
+//   const [collapsed, setCollapsed] = useState(true);
+//   const [showModal, setShowModal] = useState(false);
+//   const isBreakpoint = useMediaQuery(912);
+//   const { isWeb3Enabled, chainId: chainIdHex } = useMoralis();
+//   const { switchNetwork } = useChain();
+
+//   const chainId = parseInt(chainIdHex);
+//   const router = useRouter();
+//   const currentUrl = router.asPath;
+
+//   const handleSidebar = () => setCollapsed(!collapsed);
+
+//   return (
+//     <>
+//       <AuthModal isOpen={showModal} onClose={() => setShowModal(false)} />
+
+//       <header className="sticky top-0 z-50 w-full bg-white border-b border-zinc-100 shadow-sm">
+//         {/* Mobile Sidebar */}
+//         {!collapsed && isBreakpoint && (
+//           <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex justify-end">
+//             <div className="h-full w-[250px] bg-white shadow-2xl">
+//               <div className="p-5 flex justify-end">
+//                 <FaTimes
+//                   className="text-zinc-600 text-2xl cursor-pointer hover:text-red-500"
+//                   onClick={handleSidebar}
+//                 />
+//               </div>
+//               <div className="flex flex-col gap-6 px-6 mt-4">
+//                 <Link href="/">
+//                   <p className="text-zinc-600 font-medium">Home</p>
+//                 </Link>
+//                 <Link href="/projects">
+//                   <p className="text-zinc-600 font-medium">Projects</p>
+//                 </Link>
+//                 <Link href="/launch">
+//                   <p className="text-zinc-600 font-medium">Get Funded</p>
+//                 </Link>
+//                 {/* Mobile Sign In */}
+//                 {currentUrl === "/" && (
+//                   <button
+//                     onClick={() => setShowModal(true)}
+//                     className="bg-orange-600 text-white py-2 rounded-lg font-bold"
+//                   >
+//                     Sign In
+//                   </button>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         )}
+
+//         <nav className="container mx-auto px-6 h-20 flex items-center justify-between">
+//           <div
+//             className="flex items-center cursor-pointer"
+//             onClick={() => router.push("/")}
+//           >
+//             <img
+//               src="./my_logo.svg"
+//               className="h-8 object-contain hidden md:block"
+//               alt="Logo"
+//             />
+//             <img
+//               src="./my_icon.svg"
+//               className="h-8 object-contain md:hidden block"
+//               alt="Icon"
+//             />
+//           </div>
+
+//           {!isBreakpoint && (
+//             <div className="flex items-center gap-10">
+//               <Link href="/">
+//                 <a
+//                   className={`text-base font-medium ${
+//                     currentUrl === "/"
+//                       ? "text-orange-600 font-bold"
+//                       : "text-zinc-500 hover:text-orange-600"
+//                   }`}
+//                 >
+//                   Home
+//                 </a>
+//               </Link>
+//               <Link href="/projects">
+//                 <a
+//                   className={`text-base font-medium ${
+//                     currentUrl === "/projects"
+//                       ? "text-orange-600 font-bold"
+//                       : "text-zinc-500 hover:text-orange-600"
+//                   }`}
+//                 >
+//                   Projects
+//                 </a>
+//               </Link>
+//               <Link href="/launch">
+//                 <a
+//                   className={`text-base font-medium ${
+//                     currentUrl === "/launch"
+//                       ? "text-orange-600 font-bold"
+//                       : "text-zinc-500 hover:text-orange-600"
+//                   }`}
+//                 >
+//                   Get Funded
+//                 </a>
+//               </Link>
+//             </div>
+//           )}
+
+//           <div className="flex items-center gap-4">
+//             {currentUrl !== "/" && (
+//               <div className="flex items-center gap-3">
+//                 <ConnectButton moralisAuth={false} />
+//                 {chainId !== 97 && isWeb3Enabled && !isBreakpoint && (
+//                   <button
+//                     className="flex items-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded-lg text-xs font-bold border border-red-100"
+//                     onClick={() => switchNetwork("0x61")}
+//                   >
+//                     <FaExclamationTriangle /> Switch Network
+//                   </button>
+//                 )}
+//               </div>
+//             )}
+
+//             {currentUrl === "/" && !isBreakpoint && (
+//               <button
+//                 onClick={() => setShowModal(true)}
+//                 className="ml-6 bg-zinc-900 text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-orange-600 transition-all"
+//               >
+//                 Sign In
+//               </button>
+//             )}
+
+//             {isBreakpoint && (
+//               <button
+//                 onClick={handleSidebar}
+//                 className="p-2 rounded-full hover:bg-zinc-100 text-zinc-600"
+//               >
+//                 <FaBars className="w-6 h-6" />
+//               </button>
+//             )}
+//           </div>
+//         </nav>
+//       </header>
+//     </>
+//   );
+// }
+
 import Link from "next/link";
 import { ConnectButton } from "web3uikit";
-import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
-import "react-pro-sidebar/dist/css/styles.css";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useMoralis, useChain } from "react-moralis";
 import { useRouter } from "next/router";
-import { FaBars, FaTimes, FaExclamationTriangle } from "react-icons/fa";
+import {
+  FaBars,
+  FaTimes,
+  FaExclamationTriangle,
+  FaUser,
+  FaSignOutAlt,
+  FaChevronDown,
+} from "react-icons/fa";
 
-// IMPORT YOUR NEW COMPONENTS
+// CONTEXT
+import { useAuth } from "../context/AuthContext";
+
+// COMPONENTS
 import LoginForm from "../components/LoginForm";
 import SignupForm from "../components/SignupForm";
 
 // --- AUTH MODAL COMPONENT ---
 const AuthModal = ({ isOpen, onClose }) => {
   const [isSignUp, setIsSignUp] = useState(false);
-  const router = useRouter();
+  const { login } = useAuth();
 
   if (!isOpen) return null;
 
-const handleAuthSuccess = (shouldRedirect = false) => {
-    if (shouldRedirect) {
-      // CASE 1: Google Login OR Normal Login
-      onClose();
-      router.push("/dashboard");
-    } else {
-      // CASE 2: Normal Signup
-      setIsSignUp(false); 
-    }
+  // We expect the forms to return the token and the full user object now
+  const handleSuccess = (token, userData) => {
+    login(token, userData);
+    onClose();
   };
 
   return (
@@ -285,11 +543,10 @@ const handleAuthSuccess = (shouldRedirect = false) => {
             {isSignUp ? "Join the funding revolution." : ""}
           </p>
 
-          {/* DYNAMICALLY RENDER THE FORM */}
           {isSignUp ? (
-            <SignupForm onSuccess={handleAuthSuccess} />
+            <SignupForm onSuccess={handleSuccess} />
           ) : (
-          <LoginForm onSuccess={() => handleAuthSuccess(true)} />
+            <LoginForm onSuccess={handleSuccess} />
           )}
 
           <p
@@ -306,7 +563,69 @@ const handleAuthSuccess = (shouldRedirect = false) => {
   );
 };
 
-// --- HEADER COMPONENT (Kept Simple) ---
+// --- USER DROPDOWN COMPONENT ---
+const UserDropdown = ({ name }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { logout } = useAuth();
+  const dropdownRef = useRef(null);
+
+  // Close dropdown if clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Safe check to ensure name exists before getting charAt
+  const requestName = name || "User";
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 hover:bg-zinc-50 px-3 py-2 rounded-lg transition-colors"
+      >
+        <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm">
+          {requestName.charAt(0).toUpperCase()}
+        </div>
+        <span className="font-semibold text-zinc-700 text-sm hidden md:block">
+          {requestName}
+        </span>
+        <FaChevronDown
+          className={`text-zinc-400 text-xs transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-zinc-100 py-2 animate__animated animate__fadeInDown animate__faster">
+          <div className="px-4 py-2 border-b border-zinc-50 mb-1">
+            <p className="text-xs text-zinc-400">Signed in as</p>
+            <p className="font-bold text-zinc-800 truncate">{requestName}</p>
+          </div>
+          <Link href="/dashboard">
+            <a className="flex items-center gap-2 px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-orange-600">
+              <FaUser size={14} /> Dashboard
+            </a>
+          </Link>
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-red-50 text-left mt-1"
+          >
+            <FaSignOutAlt size={14} /> Log Out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- MAIN HEADER ---
 const useMediaQuery = (width) => {
   const [targetReached, setTargetReached] = useState(false);
   const updateTarget = useCallback((e) => {
@@ -325,6 +644,13 @@ const useMediaQuery = (width) => {
 export default function Header() {
   const [collapsed, setCollapsed] = useState(true);
   const [showModal, setShowModal] = useState(false);
+
+  // Destructure 'loading' too!
+  const { user, loading } = useAuth();
+  const { user: userDetails } = user || {};
+
+  console.log("The user is : ", userDetails);
+
   const isBreakpoint = useMediaQuery(912);
   const { isWeb3Enabled, chainId: chainIdHex } = useMoralis();
   const { switchNetwork } = useChain();
@@ -334,6 +660,9 @@ export default function Header() {
   const currentUrl = router.asPath;
 
   const handleSidebar = () => setCollapsed(!collapsed);
+
+  // Helper to get the name safely (Backend uses fullName, Frontend might expect name)
+  const userName = user?.fullName || userDetails?.username;
 
   return (
     <>
@@ -360,14 +689,26 @@ export default function Header() {
                 <Link href="/launch">
                   <p className="text-zinc-600 font-medium">Get Funded</p>
                 </Link>
-                {/* Mobile Sign In */}
-                {currentUrl === "/" && (
-                  <button
-                    onClick={() => setShowModal(true)}
-                    className="bg-orange-600 text-white py-2 rounded-lg font-bold"
-                  >
-                    Sign In
-                  </button>
+
+                {/* Mobile: If user is logged in, show their name */}
+                {user ? (
+                  <div className="py-2 border-t border-zinc-100 mt-4">
+                    <p className="text-xs text-zinc-400 mb-2">Logged in as</p>
+                    <p className="font-bold text-zinc-800 text-lg">
+                      {userName}
+                    </p>
+                  </div>
+                ) : (
+                  // Only show Sign In if NOT loading and NOT logged in
+                  !loading &&
+                  currentUrl === "/" && (
+                    <button
+                      onClick={() => setShowModal(true)}
+                      className="bg-orange-600 text-white py-2 rounded-lg font-bold w-full"
+                    >
+                      Sign In
+                    </button>
+                  )
                 )}
               </div>
             </div>
@@ -430,7 +771,8 @@ export default function Header() {
           )}
 
           <div className="flex items-center gap-4">
-            {currentUrl !== "/" && (
+            {/* Connect Wallet Button (Always visible if needed) */}
+            {(currentUrl !== "/" || user) && (
               <div className="flex items-center gap-3">
                 <ConnectButton moralisAuth={false} />
                 {chainId !== 97 && isWeb3Enabled && !isBreakpoint && (
@@ -444,13 +786,23 @@ export default function Header() {
               </div>
             )}
 
-            {currentUrl === "/" && !isBreakpoint && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="ml-6 bg-zinc-900 text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-orange-600 transition-all"
-              >
-                Sign In
-              </button>
+            {/* WEB2 AUTH LOGIC */}
+            {user ? (
+              // If logged in: Show Dropdown with userName
+              <UserDropdown name={userName} />
+            ) : (
+              // If NOT logged in: Show Sign In Button (Desktop)
+              // We check !loading to prevent the button from flashing on refresh
+              !loading &&
+              currentUrl === "/" &&
+              !isBreakpoint && (
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="ml-6 bg-zinc-900 text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-orange-600 transition-all"
+                >
+                  Sign In
+                </button>
+              )
             )}
 
             {isBreakpoint && (

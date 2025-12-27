@@ -127,10 +127,8 @@
 // }
 
 
-
-
 import { useState } from "react";
-import { GoogleLogin } from '@react-oauth/google'; // 1. IMPORT GOOGLE
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function SignupForm({ onSuccess }) {
   const [formData, setFormData] = useState({
@@ -143,17 +141,22 @@ export default function SignupForm({ onSuccess }) {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
+  // Get API URL correctly
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Clear specific error when user starts typing
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: "" });
+    }
   };
 
-  // --- 2. HANDLE GOOGLE SUCCESS ---
+  // --- 1. HANDLE GOOGLE SUCCESS ---
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       setIsLoading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       
-      // Send the Google Token to YOUR backend
       const response = await fetch(`${apiUrl}/api/auth/google-login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -164,11 +167,9 @@ export default function SignupForm({ onSuccess }) {
 
       if (!response.ok) throw new Error(data.message || "Google Sign-In failed");
 
-      // Save YOUR app's token (not Google's)
-      localStorage.setItem("authToken", data.token);
-
-      alert("Signed in with Google successfully!");
-      if (onSuccess) onSuccess(true);
+      // SUCCESS: Pass token and user data up to the Header/Context
+      // DO NOT set localStorage here manually
+      if (onSuccess) onSuccess(data.token, data);
 
     } catch (error) {
       console.error("Google Auth Error:", error);
@@ -178,6 +179,7 @@ export default function SignupForm({ onSuccess }) {
     }
   };
 
+  // --- 2. HANDLE REGULAR SIGNUP ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -195,7 +197,6 @@ export default function SignupForm({ onSuccess }) {
     if (Object.keys(newErrors).length === 0) {
       try {
         const { confirmPassword, ...submissionData } = formData;
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
         
         const response = await fetch(`${apiUrl}/api/users/add-user`, {
           method: "POST",
@@ -206,10 +207,9 @@ export default function SignupForm({ onSuccess }) {
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Failed to register");
 
-        alert("Account created! Please log in.");
-        
-        // Trigger Success (Switch to Login tab usually)
-        if (onSuccess) onSuccess(false);
+        // SUCCESS: Auto-Login the user immediately!
+        // Your backend returns the token on signup, so use it.
+        if (onSuccess) onSuccess(data.token, data);
 
       } catch (error) {
         console.error(error);
@@ -229,7 +229,7 @@ export default function SignupForm({ onSuccess }) {
             placeholder="Full Name"
             required
             onChange={handleChange}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+            className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none transition-all ${errors.fullName ? "border-red-500 bg-red-50" : "border-zinc-300 focus:border-orange-500"}`}
           />
           {errors.fullName && <p className="text-xs text-red-600 mt-1">{errors.fullName}</p>}
         </div>
@@ -241,8 +241,9 @@ export default function SignupForm({ onSuccess }) {
             placeholder="Username"
             required
             onChange={handleChange}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+            className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none transition-all ${errors.username ? "border-red-500 bg-red-50" : "border-zinc-300 focus:border-orange-500"}`}
           />
+           {errors.username && <p className="text-xs text-red-600 mt-1">{errors.username}</p>}
         </div>
 
         <div>
@@ -252,8 +253,9 @@ export default function SignupForm({ onSuccess }) {
             placeholder="Email Address"
             required
             onChange={handleChange}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+            className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none transition-all ${errors.email ? "border-red-500 bg-red-50" : "border-zinc-300 focus:border-orange-500"}`}
           />
+           {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
         </div>
 
         <div>
@@ -263,8 +265,9 @@ export default function SignupForm({ onSuccess }) {
             placeholder="Password"
             required
             onChange={handleChange}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+            className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none transition-all ${errors.password ? "border-red-500 bg-red-50" : "border-zinc-300 focus:border-orange-500"}`}
           />
+           {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
         </div>
 
         <div>
@@ -274,7 +277,7 @@ export default function SignupForm({ onSuccess }) {
             placeholder="Confirm Password"
             required
             onChange={handleChange}
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+            className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none transition-all ${errors.confirmPassword ? "border-red-500 bg-red-50" : "border-zinc-300 focus:border-orange-500"}`}
           />
           {errors.confirmPassword && <p className="text-xs text-red-600 mt-1">{errors.confirmPassword}</p>}
         </div>
@@ -282,20 +285,20 @@ export default function SignupForm({ onSuccess }) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full justify-center rounded-md bg-zinc-900 px-4 py-3 text-sm font-bold text-white hover:bg-orange-600 transition-all disabled:bg-gray-400"
+          className="w-full justify-center rounded-md bg-zinc-900 px-4 py-3 text-sm font-bold text-white hover:bg-orange-600 transition-all disabled:bg-zinc-400 disabled:cursor-not-allowed"
         >
-          {isLoading ? "Creating..." : "Sign Up"}
+          {isLoading ? "Creating Account..." : "Sign Up"}
         </button>
       </form>
 
-      {/* --- 3. DIVIDER --- */}
+      {/* --- DIVIDER --- */}
       <div className="relative flex py-2 items-center">
         <div className="flex-grow border-t border-zinc-200"></div>
-        <span className="flex-shrink-0 mx-4 text-zinc-400 text-xs">OR</span>
+        <span className="flex-shrink-0 mx-4 text-zinc-400 text-xs font-medium">OR CONTINUE WITH</span>
         <div className="flex-grow border-t border-zinc-200"></div>
       </div>
 
-      {/* --- 4. GOOGLE BUTTON --- */}
+      {/* --- GOOGLE BUTTON --- */}
       <div className="flex justify-center">
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
