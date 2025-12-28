@@ -89,11 +89,6 @@ const PageInfo = ({ projectInfo }) => {
 
   const [isOwner, setIsOwner] = useState(false);
 
-  // console.log("Naira donations: ", nairaDonations)
-  // console.log("Total amount raised in Naira: ", totalAmountRaisedInNaira);
-  // console.log("Percent funded: ", percentFunded);
-  // console.log("Goal in Naira: ", goalInNaira);
-
   const handleCloseModal = () => {
     setSuccessMessage("");
     setFailureMessage("");
@@ -102,8 +97,6 @@ const PageInfo = ({ projectInfo }) => {
   const [projectData, setProjectData] = useState({
     ...projectInfo,
   });
-
-  // console.log("Project data: ", projectData);
 
   useEffect(() => {
     if (campaign && projectData) {

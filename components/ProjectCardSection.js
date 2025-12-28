@@ -6,6 +6,8 @@ import { contractAddresses, abi } from "../constants";
 import { ethers } from "ethers";
 import { useRouter } from "next/router";
 import { ScaleLoader } from "react-spinners";
+import axios from "axios";
+
 
 export default function ProjectCardSection() {
   const {
@@ -48,39 +50,33 @@ export default function ProjectCardSection() {
       provider
     );
 
-    console.log("Crowdfund address: ", crowdfundAddress)
+    console.log("Crowdfund address: ", crowdfundAddress);
 
     // Fetch all projects from contract
     const projects = await getAllProjects({
       onError: (error) => console.log("getAllProjects error:", error),
     });
 
-    // console.log("Projects: ", projects);
-
-
     if (!projects || projects.length === 0) return [];
 
     const now = Math.floor(Date.now() / 1000);
 
-
-    console.log("Are we here? ");
-
-    console.log("All projects: ", projects)
-
     const allProjects = await Promise.all(
       projects.map(async (project) => {
         try {
+          console.log("Project.id: ", Number(project.id));
 
-          console.log("Project.id: ", Number(project.id))
+          const amountRaised =
+            await crowdfundContract.getTotalAmountRaisedInDollars(
+              Number(project.id)
+            );
+          console.log("Amount raised: ", amountRaised);
 
-          const amountRaised = await crowdfundContract.getTotalAmountRaisedInDollars(
+          const newBackers = await crowdfundContract.getBackers(
             Number(project.id)
           );
-          console.log("Amount raised: ", amountRaised)
 
-          const newBackers = await crowdfundContract.getBackers(Number(project.id));
-
-          console.log("New backers: ", newBackers)
+          console.log("New backers: ", newBackers);
 
           const [amountRaisedInDollars, backers, currentProject] =
             await Promise.all([
@@ -89,7 +85,7 @@ export default function ProjectCardSection() {
               crowdfundContract.projects(project.id),
             ]);
 
-            console.log("Now we are here")
+          console.log("Now we are here");
 
           const [, , , , , , , , , isFinalized, isClaimed, isRefunded] =
             currentProject;
@@ -154,6 +150,34 @@ export default function ProjectCardSection() {
     fetcher
   );
 
+  // Get all campaigns from database;
+  const dbFetcher = async (url) => {
+    // console.log("Inside DB fetcher, URL: ", url);
+    const res = await axios.get(url);
+
+    // console.log("DB Fetcher response: ", res);
+    return res.data.data; // Assuming your API returns { status: 'success', data: [...] }
+  };
+
+  const { data: dbProjects } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/campaigns`,
+    dbFetcher
+  );
+
+  // console.log("DB Projects: ", dbProjects);
+
+  const dbProjectMap = useMemo(() => {
+    if (!dbProjects) return {};
+    const map = {};
+    dbProjects.forEach((proj) => {
+      // Map the On-Chain ID (stored as campaignId in DB) to the project object
+      if (proj.campaignId) {
+        map[String(proj.campaignId)] = proj;
+      }
+    });
+    return map;
+  }, [dbProjects]);
+
   const isTestnet = chainId === 97;
   const isHome = router.pathname === "/";
 
@@ -185,26 +209,45 @@ export default function ProjectCardSection() {
         )}
 
         {allProjects && isTestnet && (
-          <div
-            className={`grid ${
-              allProjects.length >= 4
-                ? "grid-rows-4"
-                : `grid-rows-${allProjects.length}`
-            } grid-cols-1 sm:grid-rows-2 sm:grid-cols-2 lg:grid-rows-1 lg:grid-cols-4 xs:grid-rows-1 xs:grid-cols-4 gap-2 justify-start w-full`}
-          >
-            {isHome
-              ? allProjects
-                  .slice(0, 4)
-                  .map((projectInfo) => (
-                    <ProjectCard
-                      key={projectInfo.id}
-                      projectInfo={projectInfo}
-                    />
-                  ))
-              : allProjects.map((projectInfo) => (
-                  <ProjectCard key={projectInfo.id} projectInfo={projectInfo} />
-                ))}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {(isHome ? allProjects?.slice(0, 4) : allProjects)?.map(
+              (chainProj) => {
+                // FIND THE MATCH!
+                // We look inside our map for the ID that matches this blockchain project
+                const matchingDbProj = dbProjectMap[String(chainProj.id)];
+
+                return (
+                  <ProjectCard
+                    key={chainProj.id}
+                    // PASS THE TWO SEPARATELY
+                    onChainProjectInfo={chainProj}
+                    dbProjectInfo={matchingDbProj} // This might be undefined if not found in DB yet
+                  />
+                );
+              }
+            )}
           </div>
+
+          // <div
+          //   className={`grid ${
+          //     allProjects.length >= 4
+          //       ? "grid-rows-4"
+          //       : `grid-rows-${allProjects.length}`
+          //   } grid-cols-1 sm:grid-rows-2 sm:grid-cols-2 lg:grid-rows-1 lg:grid-cols-4 xs:grid-rows-1 xs:grid-cols-4 gap-2 justify-start w-full`}
+          // >
+          //   {isHome
+          //     ? allProjects
+          //         .slice(0, 4)
+          //         .map((projectInfo) => (
+          //           <ProjectCard
+          //             key={projectInfo.id}
+          //             projectInfo={projectInfo}
+          //           />
+          //         ))
+          //     : allProjects.map((projectInfo) => (
+          //         <ProjectCard key={projectInfo.id} projectInfo={projectInfo} />
+          //       ))}
+          // </div>
         )}
 
         {allProjects?.length >= 4 && isHome && isTestnet && (
