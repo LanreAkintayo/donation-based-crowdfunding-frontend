@@ -25,6 +25,7 @@ import CampaignEvidence from "../components/CampaignEvidence";
 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 const projectSecret = process.env.NEXT_PUBLIC_API_SECRET_KEY;
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 const Launch = () => {
   const {
@@ -92,6 +93,9 @@ const Launch = () => {
   }, []);
 
   // console.log("Banks: ", banks);
+
+
+  // console.log("Evidence Files: ", evidenceFiles)
 
   useEffect(() => {
     const fetchBanks = async () => {
@@ -267,6 +271,9 @@ const Launch = () => {
     setIsLaunching(true);
     setLaunchText("Publishing Project");
 
+     const res = await getHash(imageFile);
+      const hash = res.data.data.cid;
+
     // Check if the token exists
     if (!authToken) {
       setFailureMessage(
@@ -293,11 +300,13 @@ const Launch = () => {
     // Phase 1: Create off-chain data
     // This creates the paystack subaccount and saves the campaign to the database with a status of pending
     try {
+      setLaunchText("Uploading evidence docs...");
+      const evidenceUrls = await getEvidence();
+
+
+      console.log("Evidence urls: ", evidenceUrls)
+
       setLaunchText("Securing campaign details...");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-      console.log("API URL:", apiUrl);
-
       const response = await axios.post(
         `${apiUrl}/api/campaigns`,
         {
@@ -306,6 +315,10 @@ const Launch = () => {
           goalAmount: projectInfo.goal.replace(/[^0-9]/g, ""),
           bankCode: bankCode,
           accountNumber: accountNumber,
+
+          image: hash,
+          duration: duration,
+          evidence: evidenceUrls,
         },
         {
           headers: {
@@ -335,8 +348,7 @@ const Launch = () => {
 
       // console.log("Uploaded Image: ", uploadedImage);
 
-      const res = await getHash(imageFile);
-      const hash = res.data.data.cid;
+     
 
       console.log("Res: ", res);
       console.log("Hash: ", hash);
@@ -374,85 +386,143 @@ const Launch = () => {
     }
   };
 
-  // Probably could add some error handling
-  // const handleSuccess = async (tx, campaignDbId, authToken) => {
-  //   console.log("Success transaction: ", tx);
+  const getEvidence = async () => {
+    // 1. If user didn't select any files, return empty array immediately
+    if (!evidenceFiles || evidenceFiles.length === 0) {
+      return [];
+    }
 
-  // const txReceipt = await trackPromise(tx.wait(1));
-  // console.log("TransactionReceipt: ", txReceipt);
+    try {
+      const formData = new FormData();
 
-  // const campaignIdInHex = txReceipt.events[0].topics[1].toString();
-  // const campaignId = ethers.BigNumber.from(campaignIdInHex).toNumber();
-  // console.log("CampaignId: ", campaignId);
+      // 2. Append all files to the form data
+      // The key "evidence" MUST match upload.array('evidence') in your backend
+      evidenceFiles.forEach((file) => {
+        formData.append("evidence", file);
+      });
 
-  //   // Update the campaign in the database
-  //   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  //   await axios.patch(
-  //     `${apiUrl}/api/campaigns/${campaignDbId}/activate`,
-  //     { campaignId: campaignId }, // Send the on-chain ID
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${authToken}`, // Send the user's login token
-  //       },
-  //     }
-  //   );
+      console.log("About to get evidence")
 
-  //   // updateUIValues()
-  //   setLaunchText("Publish Your Project");
-  //   setIsLaunching(false);
+      // 3. Send to your Backend Upload Route
+      const token = localStorage.getItem("authToken");
 
-  //   // displayToast("success", "Project has been launched successfully");
-  //   setSuccessMessage("Project has been launched");
-  //   setTransactionHash(txReceipt.transactionHash);
-  // };
+      const response = await fetch(`${apiUrl}/api/campaigns/upload`, {
+        method: "POST",
+        headers: {
+          // No "Content-Type" needed for FormData (browser sets it automatically)
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      console.log("Uploaded images")
+
+      const data = await response.json();
+
+      console.log("Data: ", data)
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to upload evidence files.");
+      }
+
+      // 4. Return the array of file objects (URLs) from the server
+      return data.files;
+    } catch (error) {
+      console.error("Evidence upload failed:", error);
+      throw error;
+    }
+  };
 
   const handleSuccess = async (tx, campaignDbId, authToken) => {
     try {
-      setLaunchText("Finalizing campaign..."); // Update status
+      setLaunchText("Finalizing campaign...");
       console.log("Success transaction: ", tx);
 
+      // 1. Wait for Blockchain Confirmation
       const txReceipt = await trackPromise(tx.wait(1));
-      console.log("TransactionReceipt: ", txReceipt);
 
-      // const campaignId = txReceipt.events[0].args[0].toString();
-      // console.log("On-Chain CampaignId: ", campaignId);
-
+      // 2. Extract Chain ID
       const campaignIdInHex = txReceipt.events[0].topics[1].toString();
       const campaignId = ethers.BigNumber.from(campaignIdInHex).toNumber();
-      console.log("CampaignId: ", campaignId);
 
-      //uncomment this too.
+      // 3. Upload Evidence Files to Cloudinary (NEW STEP)
+      // We do this NOW, so we can send the URLs to the backend immediately
+     
+
+      // 4. Activate Campaign + Save Evidence (One atomic request)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
       await axios.patch(
         `${apiUrl}/api/campaigns/${campaignDbId}/activate`,
-        { campaignId: campaignId }, // Send the on-chain ID
         {
-          headers: {
-            Authorization: `Bearer ${authToken}`, // Send the user's login token
-          },
+          campaignId: campaignId,
+          // evidence: uploadedEvidence, // <--- Send the URLs here!
+        },
+        {
+          headers: { Authorization: `Bearer ${authToken}` },
         }
       );
 
       setSuccessMessage("Project has been launched!");
       setTransactionHash(txReceipt.transactionHash);
     } catch (error) {
-      console.error("Error finalizing campaign after success:", error);
-
+      console.error("Error finalizing campaign:", error);
       const backendErrorMessage = error.response?.data?.message;
-
       setFailureMessage(
         backendErrorMessage ||
-          "Your project is on-chain, but failed to update on our site. Please contact support."
+          "Launch successful, but update failed. Contact support."
       );
-
-      if (error.receipt) {
-        setTransactionHash(error.receipt.transactionHash);
-      }
     } finally {
       setLaunchText("Publish Your Project");
       setIsLaunching(false);
     }
   };
+
+  // const handleSuccess = async (tx, campaignDbId, authToken) => {
+  //   try {
+  //     setLaunchText("Finalizing campaign..."); // Update status
+  //     console.log("Success transaction: ", tx);
+
+  //     const txReceipt = await trackPromise(tx.wait(1));
+  //     console.log("TransactionReceipt: ", txReceipt);
+
+  //     // const campaignId = txReceipt.events[0].args[0].toString();
+  //     // console.log("On-Chain CampaignId: ", campaignId);
+
+  //     const campaignIdInHex = txReceipt.events[0].topics[1].toString();
+  //     const campaignId = ethers.BigNumber.from(campaignIdInHex).toNumber();
+  //     console.log("CampaignId: ", campaignId);
+
+  //     await axios.patch(
+  //       `${apiUrl}/api/campaigns/${campaignDbId}/activate`,
+  //       { campaignId: campaignId }, // Send the on-chain ID
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${authToken}`, // Send the user's login token
+  //         },
+  //       }
+  //     );
+
+  //     setSuccessMessage("Project has been launched!");
+  //     setTransactionHash(txReceipt.transactionHash);
+  //   } catch (error) {
+  //     console.error("Error finalizing campaign after success:", error);
+
+  //     const backendErrorMessage = error.response?.data?.message;
+
+  //     setFailureMessage(
+  //       backendErrorMessage ||
+  //         "Your project is on-chain, but failed to update on our site. Please contact support."
+  //     );
+
+  //     if (error.receipt) {
+  //       setTransactionHash(error.receipt.transactionHash);
+  //     }
+  //   } finally {
+  //     setLaunchText("Publish Your Project");
+  //     setIsLaunching(false);
+  //   }
+  // };
 
   // const handleFailure = async (error, campaignDbId) => {
   const handleFailure = async (error) => {
@@ -866,7 +936,7 @@ const Launch = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 rounded-lg bg-white p-8 shadow-sm ring-1 ring-slate-900/5 md:grid-cols-3">
               <div className="md:col-span-1">
                 <h2 className="text-lg font-semibold leading-7 text-slate-900">
