@@ -78,7 +78,7 @@ export default function SupportModal({
             <div className="p-5 font-hand text-xl dark:bg-black bg-white">
               <div className="flex justify-between items-center rounded-t">
                 <div className="sm:text-2xl text-3xl text-center text-gray-700">
-                  Support Project
+                  Support Campaign
                 </div>
                 <button
                   onClick={handleCloseSupportModal}

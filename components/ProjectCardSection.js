@@ -62,27 +62,27 @@ export default function ProjectCardSection() {
     const now = Math.floor(Date.now() / 1000);
 
     const allProjects = await Promise.all(
-      projects.map(async (project) => {
+      projects.map(async (campaign) => {
         try {
-          console.log("Project.id: ", Number(project.id));
+          console.log("Campaign.id: ", Number(campaign.id));
 
           const amountRaised =
             await crowdfundContract.getTotalAmountRaisedInDollars(
-              Number(project.id)
+              Number(campaign.id)
             );
           console.log("Amount raised: ", amountRaised);
 
           const newBackers = await crowdfundContract.getBackers(
-            Number(project.id)
+            Number(campaign.id)
           );
 
           console.log("New backers: ", newBackers);
 
           const [amountRaisedInDollars, backers, currentProject] =
             await Promise.all([
-              crowdfundContract.getTotalAmountRaisedInDollars(project.id),
-              crowdfundContract.getBackers(Number(project.id)),
-              crowdfundContract.projects(project.id),
+              crowdfundContract.getTotalAmountRaisedInDollars(campaign.id),
+              crowdfundContract.getBackers(Number(campaign.id)),
+              crowdfundContract.projects(campaign.id),
             ]);
 
           console.log("Now we are here");
@@ -100,31 +100,31 @@ export default function ProjectCardSection() {
           let secondsLeft = 0;
           let status = "Pending";
 
-          if (now > Number(project.endDay)) {
-            if (project.contractStatus === 1) {
+          if (now > Number(campaign.endDay)) {
+            if (campaign.contractStatus === 1) {
               status = "Successful";
             } else if (
-              project.contractStatus === 2 ||
+              campaign.contractStatus === 2 ||
               Number(amountRaisedInDollars) === 0
             ) {
               status = "Unsuccessful";
             } else {
               status = "Closed";
             }
-          } else if (now >= Number(project.startDay)) {
+          } else if (now >= Number(campaign.startDay)) {
             status = "Active";
-            secondsLeft = Number(project.endDay) - now;
+            secondsLeft = Number(campaign.endDay) - now;
           }
 
           const percentFunded =
-            (Number(amountRaisedInDollars) / Number(project.goal)) * 100;
+            (Number(amountRaisedInDollars) / Number(campaign.goal)) * 100;
 
           return {
-            ...project,
-            id: project.id.toString(),
-            goal: project.goal.toString(),
-            startDay: project.startDay.toString(),
-            endDay: project.endDay.toString(),
+            ...campaign,
+            id: campaign.id.toString(),
+            goal: campaign.goal.toString(),
+            startDay: campaign.startDay.toString(),
+            endDay: campaign.endDay.toString(),
             amountRaisedInDollars: amountRaisedInDollars.toString(),
             secondsLeft,
             status,
@@ -136,7 +136,7 @@ export default function ProjectCardSection() {
             isRefunded,
           };
         } catch (err) {
-          console.error("Error processing project:", err);
+          console.error("Error processing campaign:", err);
           return null;
         }
       })
@@ -164,13 +164,13 @@ export default function ProjectCardSection() {
     dbFetcher
   );
 
-  // console.log("DB Projects: ", dbProjects);
+  // console.log("DB Campaigns: ", dbProjects);
 
   const dbProjectMap = useMemo(() => {
     if (!dbProjects) return {};
     const map = {};
     dbProjects.forEach((proj) => {
-      // Map the On-Chain ID (stored as campaignId in DB) to the project object
+      // Map the On-Chain ID (stored as campaignId in DB) to the campaign object
       if (proj.campaignId) {
         map[String(proj.campaignId)] = proj;
       }
@@ -208,13 +208,15 @@ export default function ProjectCardSection() {
           </div>
         )}
 
-        {allProjects && isTestnet && (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {(isHome ? allProjects?.slice(0, 4) : allProjects)?.map(
+        {allProjects && dbProjects && isTestnet && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 w-full">
+            {(isHome ? allProjects?.slice(0, 4) : allProjects?.slice(0, 5))?.map(
               (chainProj) => {
                 // FIND THE MATCH!
-                // We look inside our map for the ID that matches this blockchain project
+                // We look inside our map for the ID that matches this blockchain campaign
                 const matchingDbProj = dbProjectMap[String(chainProj.id)];
+
+                console.log("matchingDbProj: ", matchingDbProj);
 
                 return (
                   <ProjectCard

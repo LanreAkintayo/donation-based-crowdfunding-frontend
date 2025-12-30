@@ -1,13 +1,32 @@
 import { ethers } from "ethers";
 import Link from "next/link";
-import Image from "next/image"; 
+import Image from "next/image";
 
 export default function ProjectCard({ onChainProjectInfo, dbProjectInfo }) {
+  // console.log("Onchain Campaign Info: ", onChainProjectInfo);
+  // console.log("DB Campaign Info: ", dbProjectInfo);
+  const dollarToNaira = 1500; // Example conversion rate: 1 USD = 1500 NGN
+  const goalInUSD = Number(
+    ethers.utils.formatEther(onChainProjectInfo.goal || "0")
+  );
 
+  // const { amountRaised } = dbProjectInfo;
 
-  // console.log("Onchain Project Info: ", onChainProjectInfo);
-  console.log("DB Project Info: ", dbProjectInfo);
+  const nairaRaisedDirectly = dbProjectInfo?.amountRaised / 100; // e.g., 1000000 Kobo -> 10000 NGN
+  let cryptoRaisedInNaira = 0;
 
+  const cryptoRaisedInUSD = Number(
+    ethers.utils.formatEther(onChainProjectInfo.amountRaisedInDollars || "0")
+  );
+  cryptoRaisedInNaira = cryptoRaisedInUSD * dollarToNaira;
+
+  const totalNaira = nairaRaisedDirectly + cryptoRaisedInNaira;
+  const goalInNaira = goalInUSD * dollarToNaira;
+
+    const percentFunded =
+        (Number(totalNaira) / Number(goalInNaira)) * 100;
+
+  // console.log("TOtal in Naira", totalNaira, " Goal in Naira: ", goalInNaira);
 
   // --- Data Formatting (Kept from original) ---
   const goal = ethers.utils.formatEther(onChainProjectInfo.goal.toString());
@@ -18,9 +37,9 @@ export default function ProjectCard({ onChainProjectInfo, dbProjectInfo }) {
   // --- Improved Dynamic Styling ---
   // A more modern and accessible color palette for the progress bar
   const progressBarColor =
-    onChainProjectInfo.percentFunded > 70
+    percentFunded > 70
       ? "bg-emerald-500"
-      : onChainProjectInfo.percentFunded > 40
+      : percentFunded > 40
       ? "bg-amber-500"
       : "bg-rose-500";
 
@@ -83,36 +102,32 @@ export default function ProjectCard({ onChainProjectInfo, dbProjectInfo }) {
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className={`h-2 rounded-full ${progressBarColor}`}
-                style={{ width: `${onChainProjectInfo.percentFunded}%` }}
+                style={{ width: `${percentFunded}%` }}
               ></div>
             </div>
             {/* FUNDING TEXT: Clearer display of progress */}
             <p className="text-sm font-semibold text-emerald-600 mt-2">
               <span className="text-gray-800">
-                {onChainProjectInfo.percentFunded}%
+                {percentFunded.toFixed(2)}%
               </span>{" "}
-              of ${formattedGoal}
+              of ₦{dollarUSLocale.format(goalInNaira).toString() || 0}
             </p>
           </div>
 
           {/* === 4. Key Stats Divider & Information === */}
-          <div className="border-t border-gray-200 mt-4 pt-4">
+          {/* <div className="border-t border-gray-200 mt-4 pt-4">
             <p className="text-sm font-bold text-gray-800">
-              {/* Using the available 'backers' data for social proof */}
               {onChainProjectInfo.backers.length}{" "}
               <span className="font-normal text-gray-600">
                 {onChainProjectInfo.backers.length === 1 ? "backer" : "backers"}
               </span>
             </p>
-          </div>
+          </div> */}
         </div>
       </a>
     </Link>
   );
 }
-
-
-
 
 // import { ethers } from "ethers";
 // import { useMoralis, useWeb3Contract } from "react-moralis";
@@ -131,8 +146,8 @@ export default function ProjectCard({ onChainProjectInfo, dbProjectInfo }) {
 
 // export default function ProjectCard({ onChainProjectInfo }) {
 //   /*
-  
-//   daysLeft, percentFunded, backers, amountRaisedInDollars, 
+
+//   daysLeft, percentFunded, backers, amountRaisedInDollars,
 //    */
 //   const goal = ethers.utils.formatEther(onChainProjectInfo.goal.toString());
 
@@ -166,9 +181,9 @@ export default function ProjectCard({ onChainProjectInfo, dbProjectInfo }) {
 //   // console.log("Backers::: ", backers)
 //   // debugger
 
-//   // console.log("Project Info: ", onChainProjectInfo)
+//   // console.log("Campaign Info: ", onChainProjectInfo)
 
-//   console.log("Project Image URL: ", onChainProjectInfo.projectImageUrl);
+//   console.log("Campaign Image URL: ", onChainProjectInfo.projectImageUrl);
 
 //   const newImageUrl = `https://amethyst-intimate-swallow-509.mypinata.cloud/ipfs/${onChainProjectInfo.projectImageUrl}`;
 

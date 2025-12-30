@@ -86,7 +86,7 @@ const Home = () => {
               onClick={() => router.push("/projects")}
               className="flex items-center justify-center gap-3 bg-white border-2 border-zinc-200 text-zinc-700 px-10 py-4 rounded-full font-bold hover:border-orange-500 hover:text-orange-600 transition-all duration-300"
             >
-              Browse Projects
+              Browse Campaigns
             </button>
           </div>
           
@@ -144,7 +144,7 @@ const Home = () => {
               </div>
               <h3 className="text-xl font-bold mb-3">Create Campaign</h3>
               <p className="text-zinc-500 leading-relaxed">
-                Set your goal in USD. Tell your story. We handle the currency conversion so you can focus on your project.
+                Set your goal in USD. Tell your story. We handle the currency conversion so you can focus on your campaign.
               </p>
             </div>
 
@@ -178,7 +178,7 @@ const Home = () => {
         <div className="container mx-auto px-6 ft:px-20">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
             <div>
-              <h2 className="text-3xl font-bold text-zinc-900">Trending Projects</h2>
+              <h2 className="text-3xl font-bold text-zinc-900">Trending Campaigns</h2>
               <p className="text-zinc-500 mt-2 text-lg">Support creative ideas and causes.</p>
             </div>
             <button 
@@ -196,7 +196,7 @@ const Home = () => {
               onClick={() => router.push("/projects")}
               className="w-full py-4 rounded-xl border-2 border-orange-100 flex items-center justify-center gap-2 text-orange-600 font-bold"
             >
-              View All Projects <FaChevronRight />
+              View All Campaigns <FaChevronRight />
             </button>
           </div>
         </div>
@@ -264,7 +264,7 @@ export default Home;
 //               </p>
 
 //             </div>
-//             <p className="my-4 animate__animated animate__backInDown  text-sm leading-6 ft:w-8/12 text-center ft:text-left">This platform automate the process of project funding,
+//             <p className="my-4 animate__animated animate__backInDown  text-sm leading-6 ft:w-8/12 text-center ft:text-left">This platform automate the process of campaign funding,
 //             execution, and payout, reducing the need for manual intervention and enhancing efficiency. </p>
 //             <div className="flex justify-center ft:justify-start text-base ss:text-xl mt-6">
 //               <button
@@ -295,7 +295,7 @@ export default Home;
 //                 }}
 //               >
 //                 <p className="text-[12px]">
-//                 Browse Project
+//                 Browse Campaign
 //                 </p>
 
 //               </button>
@@ -311,7 +311,7 @@ export default Home;
 //         </div>
 //       </section>
 //       <section className="">
-//         <h1 className="text-3xl mt-4 ft:mt-10 px-5">Explore Projects</h1>
+//         <h1 className="text-3xl mt-4 ft:mt-10 px-5">Explore Campaigns</h1>
 //         <ProjectCardSection />
 //       </section>
 //     </div>

@@ -82,7 +82,7 @@ const Launch = () => {
   const [isValidLaunchDate, setIsValidLaunchDate] = useState(true);
   const [isValidGoal, setIsValidGoal] = useState(true);
 
-  const [launchText, setLaunchText] = useState("Publish Your Project");
+  const [launchText, setLaunchText] = useState("Publish Your Campaign");
   const [isLaunching, setIsLaunching] = useState(false);
 
   const [authToken, setAuthToken] = useState(null);
@@ -269,7 +269,7 @@ const Launch = () => {
 
   const handleLaunch = async () => {
     setIsLaunching(true);
-    setLaunchText("Publishing Project");
+    setLaunchText("Publishing Campaign");
 
      const res = await getHash(imageFile);
       const hash = res.data.data.cid;
@@ -280,7 +280,7 @@ const Launch = () => {
         "You are not logged in. Please log in to create a campaign."
       );
       setIsLaunching(false);
-      setLaunchText("Publish Your Project");
+      setLaunchText("Publish Your Campaign");
       return;
     }
 
@@ -338,7 +338,7 @@ const Launch = () => {
           "Failed to save campaign. Please try again."
       );
       setIsLaunching(false);
-      setLaunchText("Publish Your Project");
+      setLaunchText("Publish Your Campaign");
       return; // Stop if the backend fails
     }
 
@@ -354,7 +354,7 @@ const Launch = () => {
       console.log("Hash: ", hash);
       // const url = `https://cloudflare-ipfs.com/ipfs/${uploadedImage.path}`;
 
-      setLaunchText("Publishing Project");
+      setLaunchText("Publishing Campaign");
 
       launch({
         params: {
@@ -382,7 +382,7 @@ const Launch = () => {
       console.log(error);
       window.alert("Make sure you have an internet connection");
       setIsLaunching(false);
-      setLaunchText("Publish Project");
+      setLaunchText("Publish Campaign");
     }
   };
 
@@ -463,7 +463,7 @@ const Launch = () => {
         }
       );
 
-      setSuccessMessage("Project has been launched!");
+      setSuccessMessage("Campaign has been launched!");
       setTransactionHash(txReceipt.transactionHash);
     } catch (error) {
       console.error("Error finalizing campaign:", error);
@@ -473,7 +473,7 @@ const Launch = () => {
           "Launch successful, but update failed. Contact support."
       );
     } finally {
-      setLaunchText("Publish Your Project");
+      setLaunchText("Publish Your Campaign");
       setIsLaunching(false);
     }
   };
@@ -503,7 +503,7 @@ const Launch = () => {
   //       }
   //     );
 
-  //     setSuccessMessage("Project has been launched!");
+  //     setSuccessMessage("Campaign has been launched!");
   //     setTransactionHash(txReceipt.transactionHash);
   //   } catch (error) {
   //     console.error("Error finalizing campaign after success:", error);
@@ -512,14 +512,14 @@ const Launch = () => {
 
   //     setFailureMessage(
   //       backendErrorMessage ||
-  //         "Your project is on-chain, but failed to update on our site. Please contact support."
+  //         "Your campaign is on-chain, but failed to update on our site. Please contact support."
   //     );
 
   //     if (error.receipt) {
   //       setTransactionHash(error.receipt.transactionHash);
   //     }
   //   } finally {
-  //     setLaunchText("Publish Your Project");
+  //     setLaunchText("Publish Your Campaign");
   //     setIsLaunching(false);
   //   }
   // };
@@ -527,11 +527,11 @@ const Launch = () => {
   // const handleFailure = async (error, campaignDbId) => {
   const handleFailure = async (error) => {
     console.log("Error: ", error);
-    setLaunchText("Publish Your Project");
+    setLaunchText("Publish Your Campaign");
     setIsLaunching(false);
 
-    // displayToast("failure", "Failed to launch Project");
-    setFailureMessage("Failed to launch project");
+    // displayToast("failure", "Failed to launch Campaign");
+    setFailureMessage("Failed to launch campaign");
   };
 
   const handleCloseModal = () => {
@@ -547,27 +547,27 @@ const Launch = () => {
           {/* Main Page Header */}
           <div className="mx-auto max-w-3xl text-center mb-12">
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-              Create Your Project
+              Create Your Campaign
             </h1>
             <p className="mt-2 text-lg text-slate-500">
-              Make it easy for people to learn about your project and support
+              Make it easy for people to learn about your campaign and support
               your vision.
             </p>
           </div>
 
           {/* This div will hold all the form sections */}
           <div className="space-y-10">
-            {/* --- Section 1: Project Title --- */}
+            {/* --- Section 1: Campaign Title --- */}
             {/* Each section is a "card" with a shadow and rounded corners */}
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 rounded-lg bg-white p-8 shadow-sm ring-1 ring-slate-900/5 md:grid-cols-3">
               {/* Left Side: Title and Description */}
               <div className="md:col-span-1">
                 <h2 className="text-lg font-semibold leading-7 text-slate-900">
-                  Project Title
+                  Campaign Title
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-500">
                   Write a clear, brief title and subtitle. This is the first
-                  thing potential backers will see on your project page and in
+                  thing potential backers will see on your campaign page and in
                   search results.
                 </p>
               </div>
@@ -617,7 +617,7 @@ const Launch = () => {
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 rounded-lg bg-white p-8 shadow-sm ring-1 ring-slate-900/5 md:grid-cols-3">
               <div className="md:col-span-1">
                 <h2 className="text-lg font-semibold leading-7 text-slate-900">
-                  Project Description
+                  Campaign Description
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-500">
                   Explain why you need this fund. A compelling story will grab
@@ -635,21 +635,21 @@ const Launch = () => {
                 <textarea
                   onChange={handleOnChange}
                   id="note"
-                  placeholder="Tell people about your project, your passion, and why this funding is important..."
+                  placeholder="Tell people about your campaign, your passion, and why this funding is important..."
                   className="mt-2 h-48 block w-full rounded-md border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
                 ></textarea>
               </div>
             </div>
 
-            {/* --- Project Image --- */}
+            {/* --- Campaign Image --- */}
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 rounded-lg bg-white p-8 shadow-sm ring-1 ring-slate-900/5 md:grid-cols-3">
               <div className="md:col-span-1">
                 <h2 className="text-lg font-semibold leading-7 text-slate-900">
-                  Project Image
+                  Campaign Image
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-500">
-                  Add a high-quality image that represents your project. It will
-                  appear on your project page and across the website.
+                  Add a high-quality image that represents your campaign. It will
+                  appear on your campaign page and across the website.
                 </p>
               </div>
               <div className="md:col-span-2">
@@ -658,7 +658,7 @@ const Launch = () => {
                     <div className="w-full h-auto max-h-80 relative group">
                       <img
                         src={projectInfo.imageSrc}
-                        alt="Project preview"
+                        alt="Campaign preview"
                         className="object-cover w-full h-full rounded-md"
                       />
                       <button
@@ -709,7 +709,7 @@ const Launch = () => {
               </div>
             </div>
 
-            {/* --- Project Evidence --- */}
+            {/* --- Campaign Evidence --- */}
             <div className="">
               <CampaignEvidence
                 evidenceFiles={evidenceFiles}
@@ -809,133 +809,7 @@ const Launch = () => {
             </div>
 
             {/* --- Funding & Duration --- */}
-            <div className="grid grid-cols-1 gap-x-12 gap-y-10 rounded-2xl bg-white p-8 shadow-sm ring-1 ring-zinc-200 md:grid-cols-3">
-              {/* --- LEFT SIDE: DESCRIPTION --- */}
-              <div className="md:col-span-1">
-                <h2 className="text-lg font-bold leading-7 text-zinc-900">
-                  Funding Details
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-zinc-500">
-                  Set your funding goal, launch date, and campaign duration.
-                </p>
-                <div className="mt-4 rounded-md bg-orange-50 p-3 text-xs text-orange-800 border border-orange-100">
-                  <p>
-                    <strong>Note:</strong> You won&apos;t be able to change the
-                    duration after you launch. Plan well!
-                  </p>
-                </div>
-              </div>
-
-              {/* --- RIGHT SIDE: INPUTS --- */}
-              <div className="md:col-span-2">
-                <div className="grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-2">
-                  {/* 1. GOAL AMOUNT */}
-                  <div className="sm:col-span-1">
-                    <label
-                      htmlFor="goal"
-                      className="block text-sm font-medium leading-6 text-zinc-700"
-                    >
-                      Goal Amount (USD)
-                    </label>
-                    <div className="relative mt-2 rounded-md shadow-sm">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <FaDollarSign className="text-zinc-400" size={14} />
-                      </div>
-                      <input
-                        type="number" // Changed to number for better UX
-                        name="goal"
-                        id="goal"
-                        value={projectInfo.goal || ""}
-                        onChange={handleOnChange}
-                        className={`block w-full rounded-md border-0 py-2.5 pl-9 text-zinc-900 ring-1 ring-inset placeholder:text-zinc-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6 transition-all ${
-                          !isValidGoal && projectInfo.goal
-                            ? "ring-red-300 focus:ring-red-500 bg-red-50"
-                            : "ring-zinc-300 focus:ring-orange-600"
-                        }`}
-                        placeholder="e.g. 5000"
-                      />
-                    </div>
-                    {!isValidGoal && projectInfo.goal && (
-                      <p className="mt-2 flex items-center text-xs text-red-600">
-                        <FaExclamationCircle className="mr-1" /> Invalid amount
-                      </p>
-                    )}
-                  </div>
-
-                  {/* 2. DURATION */}
-                  <div className="sm:col-span-1">
-                    <label
-                      htmlFor="duration"
-                      className="block text-sm font-medium leading-6 text-zinc-700"
-                    >
-                      Duration (Days)
-                    </label>
-                    <div className="relative mt-2 rounded-md shadow-sm">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <FaClock className="text-zinc-400" size={14} />
-                      </div>
-                      <input
-                        type="number"
-                        name="duration"
-                        id="duration"
-                        onChange={handleOnChange}
-                        className={`block w-full rounded-md border-0 py-2.5 pl-9 pr-12 text-zinc-900 ring-1 ring-inset placeholder:text-zinc-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6 transition-all ${
-                          !isValidDuration && projectInfo.duration
-                            ? "ring-red-300 focus:ring-red-500 bg-red-50"
-                            : "ring-zinc-300 focus:ring-orange-600"
-                        }`}
-                        placeholder="1 - 30"
-                      />
-                      {/* Suffix */}
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                        <span className="text-zinc-500 sm:text-xs font-medium">
-                          Days
-                        </span>
-                      </div>
-                    </div>
-                    {!isValidDuration && projectInfo.duration && (
-                      <p className="mt-2 flex items-center text-xs text-red-600">
-                        <FaExclamationCircle className="mr-1" /> Duration must
-                        be between 1 and 30.
-                      </p>
-                    )}
-                  </div>
-
-                  {/* 3. LAUNCH DATE */}
-                  <div className="sm:col-span-2">
-                    <label
-                      htmlFor="launchDate"
-                      className="block text-sm font-medium leading-6 text-zinc-700"
-                    >
-                      Launch Date
-                    </label>
-                    <div className="relative mt-2">
-                      {/* Wrapper to force DatePicker to fill width */}
-                      <div className="relative w-full">
-                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 z-10">
-                          <FaCalendarAlt className="text-zinc-400" size={14} />
-                        </div>
-                        <DatePicker
-                          id="launchDate"
-                          selected={projectInfo.launchDate}
-                          onChange={(date) => {
-                            /* Your logic */
-                          }}
-                          placeholderText="Select a start date"
-                          className="block w-full rounded-md border-0 py-2.5 pl-10 text-zinc-900 ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 cursor-pointer"
-                          dateFormat="MMMM d, yyyy"
-                          minDate={new Date()} // Prevent past dates
-                        />
-                      </div>
-                    </div>
-                    <p className="mt-2 text-xs text-zinc-500">
-                      This is when your campaign will become visible to the
-                      public.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+      
 
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 rounded-lg bg-white p-8 shadow-sm ring-1 ring-slate-900/5 md:grid-cols-3">
               <div className="md:col-span-1">

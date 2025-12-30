@@ -12,19 +12,19 @@ import { usePromiseTracker, trackPromise } from "react-promise-tracker";
 import ProjectCardSection from "../components/ProjectCardSection";
 import Layout from "./layout";
 
-const Projects = () => {
+const Campaigns = () => {
   return (
     <div className="flex flex-col w-full justify-between">
       <div>
-        <h1 className="text-center w-full mt-8 text-3xl">All Projects</h1>
+        <h1 className="text-center w-full mt-8 text-3xl">All Campaigns</h1>
         <ProjectCardSection />
       </div>
     </div>
   );
 }
 
-Projects.getLayout = function getLayout(page) {
+Campaigns.getLayout = function getLayout(page) {
   return <Layout>{page}</Layout>;
 };
 
-export default Projects;
+export default Campaigns;

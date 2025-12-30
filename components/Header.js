@@ -96,7 +96,7 @@
 //                       "border-b-2 border-orange-700"
 //                     } font-semibold hover:text-orange-500 text-lg`}
 //                   >
-//                     Projects
+//                     Campaigns
 //                   </p>
 //                 </Link>
 //               </MenuItem>
@@ -149,7 +149,7 @@
 //                       "border-b-2 border-orange-700"
 //                     } font-semibold hover:text-orange-500 text-lg`}
 //                   >
-//                     Projects
+//                     Campaigns
 //                   </a>
 //                 </Link>
 
@@ -355,7 +355,7 @@
 //                   <p className="text-zinc-600 font-medium">Home</p>
 //                 </Link>
 //                 <Link href="/projects">
-//                   <p className="text-zinc-600 font-medium">Projects</p>
+//                   <p className="text-zinc-600 font-medium">Campaigns</p>
 //                 </Link>
 //                 <Link href="/launch">
 //                   <p className="text-zinc-600 font-medium">Get Funded</p>
@@ -412,7 +412,7 @@
 //                       : "text-zinc-500 hover:text-orange-600"
 //                   }`}
 //                 >
-//                   Projects
+//                   Campaigns
 //                 </a>
 //               </Link>
 //               <Link href="/launch">
@@ -684,7 +684,7 @@ export default function Header() {
                   <p className="text-zinc-600 font-medium">Home</p>
                 </Link>
                 <Link href="/projects">
-                  <p className="text-zinc-600 font-medium">Projects</p>
+                  <p className="text-zinc-600 font-medium">Campaigns</p>
                 </Link>
                 <Link href="/launch">
                   <p className="text-zinc-600 font-medium">Get Funded</p>
@@ -753,7 +753,7 @@ export default function Header() {
                       : "text-zinc-500 hover:text-orange-600"
                   }`}
                 >
-                  Projects
+                  Campaigns
                 </a>
               </Link>
               <Link href="/launch">

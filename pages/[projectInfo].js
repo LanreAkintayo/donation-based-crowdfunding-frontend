@@ -179,7 +179,7 @@ const PageInfo = ({ projectInfo }) => {
 
       const newprojects = await crowdfundContract.getAllProjects();
 
-      const project = newprojects[projectData.id];
+      const campaign = newprojects[projectData.id];
 
       const [
         owner,
@@ -193,7 +193,7 @@ const PageInfo = ({ projectInfo }) => {
         projectImageUrl,
         contractStatus,
         isClosed,
-      ] = project;
+      ] = campaign;
 
       const amountRaisedInDollars =
         await crowdfundContract.getTotalAmountRaisedInDollars(id);
@@ -325,18 +325,18 @@ const PageInfo = ({ projectInfo }) => {
 
     const projects = await crowdfundContract.getAllProjects();
 
-    const project = projects.filter(
-      (project) => project.id == projectInfo.id
+    const campaign = projects.filter(
+      (campaign) => campaign.id == projectInfo.id
     )[0];
 
-    const isFinalized = (await crowdfundContract.projects(project.id))[9];
-    const isClaimed = (await crowdfundContract.projects(project.id))[10];
-    const isRefunded = (await crowdfundContract.projects(project.id))[11];
+    const isFinalized = (await crowdfundContract.projects(campaign.id))[9];
+    const isClaimed = (await crowdfundContract.projects(campaign.id))[10];
+    const isRefunded = (await crowdfundContract.projects(campaign.id))[11];
     // console.log("Is it finalized? ", isFinalized)
 
     const amountRaisedInDollars =
-      await crowdfundContract.getTotalAmountRaisedInDollars(project.id);
-    const backers = await crowdfundContract.getBackers(project.id);
+      await crowdfundContract.getTotalAmountRaisedInDollars(campaign.id);
+    const backers = await crowdfundContract.getBackers(campaign.id);
     const editedBackers = backers.map((backer) => {
       console.log("Returning .............", [
         backer[0],
@@ -350,17 +350,17 @@ const PageInfo = ({ projectInfo }) => {
     let status;
 
     if (
-      Math.floor(Number(new Date().getTime() / 1000)) > Number(project.endDay)
+      Math.floor(Number(new Date().getTime() / 1000)) > Number(campaign.endDay)
     ) {
       status = "Closed";
       secondsLeft = 0;
     } else if (
       Number(Math.floor(Number(new Date().getTime() / 1000))) >=
-      Number(project.startDay)
+      Number(campaign.startDay)
     ) {
       status = "Active";
       secondsLeft =
-        Number(project.endDay) -
+        Number(campaign.endDay) -
         Number(Math.floor(Number(new Date().getTime() / 1000)));
     } else {
       status = "Pending";
@@ -368,15 +368,15 @@ const PageInfo = ({ projectInfo }) => {
     }
 
     const percentFunded =
-      (Number(amountRaisedInDollars) / Number(project.goal)) * 100;
+      (Number(amountRaisedInDollars) / Number(campaign.goal)) * 100;
 
     setProjectData({
-      ...project,
+      ...campaign,
       amountRaisedInDollars: amountRaisedInDollars.toString(),
-      endDay: project.endDay.toString(),
-      goal: project.goal.toString(),
-      id: project.id.toString(),
-      startDay: project.startDay.toString(),
+      endDay: campaign.endDay.toString(),
+      goal: campaign.goal.toString(),
+      id: campaign.id.toString(),
+      startDay: campaign.startDay.toString(),
       secondsLeft,
       status,
       percentFunded: percentFunded >= 100 ? 100 : Math.floor(percentFunded),
@@ -650,12 +650,12 @@ const PageInfo = ({ projectInfo }) => {
           <div className="flex flex-col md:w-7/12 px-8">
             {projectData.isClaimed && (
               <div className="p-2 bg-green-300 text-green-700">
-                Project was successful
+                Campaign was successful
               </div>
             )}
             {projectData.isRefunded && (
               <div className="p-2 bg-red-300 text-red-700">
-                Project was unsuccessful
+                Campaign was unsuccessful
               </div>
             )}
 
@@ -788,7 +788,7 @@ const PageInfo = ({ projectInfo }) => {
                   className="my-6 w-full cursor-not-allowed rounded-md p-2 disabled:opacity-50 bg-yellow-200 text-yellow-800"
                   disabled={true}
                 >
-                  Project is Closed
+                  Campaign is Closed
                 </button>
               )}
 
@@ -873,7 +873,7 @@ const PageInfo = ({ projectInfo }) => {
                 className="my-6 w-full rounded-md p-2 disabled:opacity-50 bg-green-200 text-green-800"
                 disabled={true}
               >
-                Support this Project
+                Support this Campaign
               </button>
             )}
 
@@ -883,7 +883,7 @@ const PageInfo = ({ projectInfo }) => {
                 className="my-6 w-full cursor-not-allowed rounded-md p-2 disabled:opacity-50 bg-yellow-200 text-yellow-800"
                 disabled={true}
               >
-                Project is Closed
+                Campaign is Closed
               </button>
             )}
           </div>

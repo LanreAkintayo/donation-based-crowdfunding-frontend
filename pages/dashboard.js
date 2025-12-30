@@ -54,18 +54,18 @@ const Home = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
           <StatCard
-            title="Projects You've Backed"
-            value="12"
+            title="Campaigns You've Supported"
+            value="2"
             icon={<Layers size={24} className="text-emerald-600" />}
           />
           <StatCard
             title="Total Contributed"
-            value="4.75 ETH"
+            value="₦9,000"
             icon={<Wallet size={24} className="text-sky-600" />}
           />
           <StatCard
-            title="Successful Projects"
-            value="7"
+            title="Successful Campaigns"
+            value="1"
             icon={<CheckCircle size={24} className="text-rose-600" />}
           />
         </div>
@@ -74,7 +74,7 @@ const Home = () => {
           <div className="bg-white p-8 rounded-xl border border-gray-200 flex flex-col items-start hover:border-emerald-500 transition-colors">
             <Rocket size={32} className="text-emerald-500 mb-4" />
             <h2 className="text-2xl font-bold text-gray-900">
-              Launch a New Project
+              Launch a New Campaign
             </h2>
             <p className="text-gray-600 mt-2 mb-6 flex-grow">
               Have a new idea? Get the funding you need from our vibrant
@@ -93,7 +93,7 @@ const Home = () => {
 
             <Search size={32} className="text-sky-500 mb-4" />
             <h2 className="text-2xl font-bold text-gray-900">
-              Explore Projects
+              Explore Campaigns
             </h2>
             <p className="text-gray-600 mt-2 mb-6 flex-grow">
               Discover and support innovative projects from creators around the
@@ -103,7 +103,7 @@ const Home = () => {
               onClick={() => window.open("/projects", "_self")}
               className="w-full bg-gray-200 text-gray-800 font-semibold py-3 rounded-lg hover:bg-gray-300 transition-colors"
             >
-              Browse Projects
+              Browse Campaigns
             </button>
           </div>
         </div>
@@ -169,7 +169,7 @@ export default Home;
 //               </p>
 
 //             </div>
-//             <p className="my-4 animate__animated animate__backInDown  text-sm leading-6 ft:w-8/12 text-center ft:text-left">This platform automate the process of project funding,
+//             <p className="my-4 animate__animated animate__backInDown  text-sm leading-6 ft:w-8/12 text-center ft:text-left">This platform automate the process of campaign funding,
 //             execution, and payout, reducing the need for manual intervention and enhancing efficiency. </p>
 //             <div className="flex justify-center ft:justify-start text-base ss:text-xl mt-6">
 //               <button
@@ -200,7 +200,7 @@ export default Home;
 //                 }}
 //               >
 //                 <p className="text-[12px]">
-//                 Browse Project
+//                 Browse Campaign
 //                 </p>
 
 //               </button>
@@ -216,7 +216,7 @@ export default Home;
 //         </div>
 //       </section>
 //       <section className="">
-//         <h1 className="text-3xl mt-4 ft:mt-10 px-5">Explore Projects</h1>
+//         <h1 className="text-3xl mt-4 ft:mt-10 px-5">Explore Campaigns</h1>
 //         <ProjectCardSection />
 //       </section>
 //     </div>
