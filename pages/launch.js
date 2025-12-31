@@ -808,7 +808,7 @@ const Launch = () => {
               </div>
             </div>
 
-            {/* --- Funding & Duration --- */}
+            {/* --- Funding & Duration -- */}
       
 
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 rounded-lg bg-white p-8 shadow-sm ring-1 ring-slate-900/5 md:grid-cols-3">
