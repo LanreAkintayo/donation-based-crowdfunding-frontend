@@ -1,6 +1,5 @@
 # Donation-Based Crowdfunding System
 
-![Project Banner](https://via.placeholder.com/1200x400?text=Project+Banner+Here)
 ## 📄 Overview
 It is a crowdfunding application that allows users to create campaigns, donate via fiat (Naira) and crypto to causes, and track donation milestones transparently on the blockchain.
 
