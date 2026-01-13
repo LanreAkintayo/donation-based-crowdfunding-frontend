@@ -1,34 +1,61 @@
-This is a [Next.js](https://nextjs.org/) campaign bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Donation-Based Crowdfunding System
 
-## Getting Started
+![Project Banner](https://via.placeholder.com/1200x400?text=Project+Banner+Here)
+## 📄 Overview
+It is a crowdfunding application that allows users to create campaigns, donate via fiat (Naira) and crypto to causes, and track donation milestones transparently on the blockchain.
 
-First, run the development server:
+This is the **Frontend** repository. It interacts with smart contracts deployed on BSC Testnet.
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+### 🌟 Key Features
+* **Campaign Creation:** Users can launch new fundraising campaigns with a target amount and deadline.
+* **Donation System:** Direct crypto donations using [Wallet Connect / Metamask] and fiat donations via Paystack.
+* **Real-time Tracking:** Progress bars showing funds raised vs. target.
+* **Transparency:** All transaction history is verifiable on-chain.
+* **Responsive Design:** Optimized for desktop using Tailwind CSS.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
+* **Framework:** Next.js
+* **Styling:** Tailwind CSS
+* **Blockchain Interaction:** [ethers.js / moralis ]
+* **Contract Development:** [ Hardhat] 
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## 🚀 Getting Started
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+### Prerequisites
+Make sure you have the following installed:
+* [Node.js](https://nodejs.org/) (v18 or higher)
+* [Git](https://git-scm.com/)
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+### Installation
 
-## Learn More
+1.  **Clone the repository**
+    ```bash
+    git clone git@github.com:LanreAkintayo/donation-based-crowdfunding-frontend.git
+    cd donation-based-crowdfunding-frontend
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+2.  **Install dependencies**
+    ```bash
+    yarn install
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3.  **Set up Environment Variables**
+    Create a `.env.local` file in the root directory and add your keys:
+    ```bash
+    NEXT_PUBLIC_API_URL=
+    NEXT_PUBLIC_PROJECT_ID=
+    NEXT_PUBLIC_API_SECRET_KEY=
+    NEXT_PUBLIC_IPFS_API_ENDPOINT=
+    NEXT_PUBLIC_PINATA_API_KEY=
+    NEXT_PUBLIC_PINATA_API_SECRET=
+    NEXT_PUBLIC_PINATA_JWT=
+    NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=
+    NEXT_PUBLIC_GOOGLE_CLIENT_ID=
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+4.  **Run the development server**
+    ```bash
+    npm run dev
+    ```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+    Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
