@@ -61,7 +61,7 @@ const Home = () => {
           </div> */}
           
           <h1 className="text-5xl ft:text-7xl font-extrabold text-zinc-900 leading-tight max-w-4xl">
-            Fund your dreams. <br />
+            Fund a cause. <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-yellow-500">
               In Naira or Crypto.
             </span>
@@ -144,7 +144,7 @@ const Home = () => {
               </div>
               <h3 className="text-xl font-bold mb-3">Create Campaign</h3>
               <p className="text-zinc-500 leading-relaxed">
-                Set your goal in USD. Tell your story. We handle the currency conversion so you can focus on your campaign.
+                Set your goal in Naira. Tell your story. 
               </p>
             </div>
 

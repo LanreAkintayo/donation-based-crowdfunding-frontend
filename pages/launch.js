@@ -145,6 +145,8 @@ const Launch = () => {
   //   );
   // }, [projectInfo, isValidDuration, isValidGoal, accountName]);
 
+
+  console.log("Project INfo: ", projectInfo)
   useEffect(() => {
     setAllValid(true);
   }, [projectInfo, isValidDuration, isValidGoal]);
@@ -155,6 +157,8 @@ const Launch = () => {
 
   const handleOnChange = async (event) => {
     const { id, value } = event.target;
+      let dollarPrice = 1500; // 1 USD = 1500 NGN
+
 
     if (event.target.id === "bankCode") {
       setBankCode(value);
@@ -191,7 +195,8 @@ const Launch = () => {
       });
     }
     if (event.target.id == "goal") {
-      const price = event.target.value;
+
+      const price = event.target.value / dollarPrice ;
       let dollarUSLocale = Intl.NumberFormat("en-US");
       // amount = dollarUSLocale.format(price).toString();
       amount = price;
@@ -208,7 +213,7 @@ const Launch = () => {
       return {
         ...prevProjectInfo,
         [event.target.id]:
-          event.target.id == "goal" ? amount : event.target.value,
+          event.target.id == "goal" ? amount : event.target.value / dollarPrice,
         [event.target.id]:
           event.target.id == "imageSrc"
             ? URL.createObjectURL(imagePath)
@@ -286,6 +291,7 @@ const Launch = () => {
 
     let newCampaign; // To store the campaign data from the backend
 
+    // const goalInDollars = projectInfo.goal.replace(/[^0-9]/g, "");
     const goalInDollars = projectInfo.goal.replace(/[^0-9]/g, "");
     const startDayInSeconds = Math.floor(
       projectInfo.launchDate.getTime() / 1000
@@ -830,11 +836,13 @@ const Launch = () => {
                       htmlFor="goal"
                       className="block text-sm font-medium leading-6 text-slate-900"
                     >
-                      Goal (in USD)
+                      {/* Goal (in USD) */}
+                      Goal (in Naira)
                     </label>
                     <div className="relative mt-2 rounded-md shadow-sm">
                       <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <span className="text-slate-500 sm:text-sm">$</span>
+                        {/* <span className="text-slate-500 sm:text-sm">₦</span> */}
+                        <span className="text-slate-500 sm:text-sm">₦</span>
                       </div>
                       <input
                         type="text"

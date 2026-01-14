@@ -10,6 +10,8 @@ export default function ProjectCard({ onChainProjectInfo, dbProjectInfo }) {
     ethers.utils.formatEther(onChainProjectInfo.goal || "0")
   );
 
+  console.log("onChainProjectInfo:", Number(onChainProjectInfo.id));
+
   // const { amountRaised } = dbProjectInfo;
 
   const nairaRaisedDirectly = dbProjectInfo?.amountRaised / 100; // e.g., 1000000 Kobo -> 10000 NGN
@@ -21,7 +23,7 @@ export default function ProjectCard({ onChainProjectInfo, dbProjectInfo }) {
   cryptoRaisedInNaira = cryptoRaisedInUSD * dollarToNaira;
 
   const totalNaira = nairaRaisedDirectly + cryptoRaisedInNaira;
-  const goalInNaira = goalInUSD * dollarToNaira;
+  const goalInNaira = Number(onChainProjectInfo.id) >= 11 ? goalInUSD : goalInUSD * dollarToNaira;
 
     const percentFunded =
         (Number(totalNaira) / Number(goalInNaira)) * 100;

@@ -81,7 +81,6 @@ const PageInfo = ({ projectInfo }) => {
   const [campaign, setCampaign] = useState(null);
   const [nairaDonations, setNairaDonations] = useState([]);
 
-
   const [nairaRaisedDirectly, setNairaRaisedDirectly] = useState(0);
   const [totalAmountRaisedInNaira, setTotalAmountRaisedInNaira] = useState(0);
   const [percentFunded, setPercentFunded] = useState(0);
@@ -109,6 +108,10 @@ const PageInfo = ({ projectInfo }) => {
     ...projectInfo,
   });
 
+
+  console.log("Project Data subtitle: ", projectData?.id);
+
+
   useEffect(() => {
     if (campaign && projectData) {
       const dollarToNaira = 1500; // Example conversion rate: 1 USD = 1500 NGN
@@ -130,8 +133,6 @@ const PageInfo = ({ projectInfo }) => {
         console.error("Error formatting crypto amount:", e);
       }
 
-
-
       // Calculate Total Raised in Naira
       const totalNaira = nairaRaisedDirectly + cryptoRaisedInNaira;
       setTotalAmountRaisedInNaira(totalNaira);
@@ -139,7 +140,12 @@ const PageInfo = ({ projectInfo }) => {
       setNairaRaisedDirectly(nairaRaisedDirectly);
 
       //  Calculate Goal in Naira
-      const goalInNaira = goalInUSD * dollarToNaira;
+      // const goalInNaira = goalInUSD;
+      const goalInNaira =
+        projectInfo && Number(projectInfo.id) >= 11
+          ? goalInUSD
+          : goalInUSD * dollarToNaira;
+
       setGoalInNaira(goalInNaira);
 
       //  Calculate Percentage Funded
@@ -660,6 +666,7 @@ const PageInfo = ({ projectInfo }) => {
         </h1>
         <p className="text-center text-gray-800">
           {projectData.projectSubtitle}
+          {projectData.id}
         </p>
         <div className="flex flex-col md:flex-row mt-11">
           <div className="flex flex-col md:w-7/12 px-8">
